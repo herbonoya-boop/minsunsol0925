@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>서울 아파트 스코어카드 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090D;--s1:#0E1018;--s2:#141720;--s3:#1C2030;--bd:#252A3A;--bd2:#363C54;
+  --tx:#DDE2F0;--mu:#566080;--mu2:#8090B8;
+  --gold:#F0C060;--silver:#74D7B0;--bronze:#60A0FF;
+  --c1:#FF7070;--c2:#FFA040;--c3:#60A0FF;--c4:#50D0A0;--c5:#B070FF;--c6:#FFD060;--c7:#FF8098;--c8:#60DDD0;
+  --red:#FF4050;--green:#40D090;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-serif;font-size:13px;line-height:1.55;}
+
+.page{max-width:1360px;margin:0 auto;padding:28px 16px 72px;}
+
+/* 헤더 */
+.hdr{margin-bottom:20px;border-bottom:1px solid var(--bd);padding-bottom:16px;}
+.hdr-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px;}
+.hdr-title{font-size:21px;font-weight:900;letter-spacing:-.4px;}
+.hdr-title span{color:var(--gold);}
+.hdr-badges{display:flex;gap:5px;flex-wrap:wrap;}
+.badge{font-size:10px;padding:2px 9px;border-radius:16px;border:1px solid var(--bd);color:var(--mu2);background:var(--s2);}
+.badge.g{border-color:rgba(64,208,144,.3);color:var(--green);}
+.hdr-sub{font-size:11px;color:var(--mu);margin-bottom:4px;}
+.src-row{font-size:10px;color:var(--mu);display:flex;flex-wrap:wrap;gap:10px;}
+
+/* 급지 체계 */
+.section-lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.section-lbl::after{content:'';flex:1;height:1px;background:var(--bd);}
+.tier-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:22px;}
+@media(max-width:720px){.tier-grid{grid-template-columns:repeat(3,1fr);}}
+.tc{border-radius:9px;padding:10px 8px;text-align:center;border:1px solid var(--bd);}
+.tc1{background:rgba(255,112,112,.08);border-color:rgba(255,112,112,.2);}
+.tc2{background:rgba(255,160,64,.06);border-color:rgba(255,160,64,.18);}
+.tc3{background:rgba(96,160,255,.06);border-color:rgba(96,160,255,.18);}
+.tc4{background:rgba(80,208,160,.05);border-color:rgba(80,208,160,.15);}
+.tc5{background:rgba(176,112,255,.05);border-color:rgba(176,112,255,.15);}
+.tc6{background:rgba(100,110,130,.06);border-color:rgba(100,110,130,.15);}
+.tc-num{font-size:10px;font-weight:700;margin-bottom:4px;}
+.t1c{color:#FF7070;}.t2c{color:#FFA040;}.t3c{color:#60A0FF;}.t4c{color:#50D0A0;}.t5c{color:#B070FF;}.t6c{color:#909BB8;}
+.tc-list{font-size:11px;font-weight:500;line-height:1.8;color:var(--tx);}
+.tc-hl{font-weight:700;}
+.tc-avg{font-size:9px;color:var(--mu);margin-top:4px;font-family:'IBM Plex Mono',monospace;}
+
+/* 배점 */
+.rubric{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:20px;}
+.rb{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:4px 9px;display:flex;align-items:center;gap:4px;}
+.rb-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0;}
+.rb-label{font-size:11px;color:var(--mu2);}
+.rb-pt{font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.rb-s{font-size:9px;color:var(--red);}
+
+/* 테이블 */
+.rank-box{background:var(--s1);border:1px solid var(--bd);border-radius:13px;overflow:hidden;margin-bottom:30px;}
+.rank-hdr{padding:11px 16px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;}
+.rh-title{font-size:13px;font-weight:700;}
+.rh-note{font-size:10px;color:var(--mu);}
+.tscroll{overflow-x:auto;}
+table.rt{width:100%;border-collapse:collapse;min-width:1000px;}
+.rt th{padding:7px 8px;font-size:10px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;background:var(--s2);text-align:center;white-space:nowrap;user-select:none;}
+.rt th.tl{text-align:left;}
+.rt th.s{cursor:pointer;transition:color .15s;}
+.rt th.s:hover{color:var(--tx);}
+.rt th.s.asc::after{content:' ▲';font-size:9px;color:var(--green);}
+.rt th.s.dsc::after{content:' ▼';font-size:9px;color:var(--green);}
+.rt td{padding:8px 8px;border-top:1px solid var(--bd);vertical-align:middle;text-align:center;}
+.rt td.tl{text-align:left;}
+.rt tr:hover td{background:rgba(96,160,255,.035);}
+.g-row td{background:rgba(240,192,96,.025);}
+.s-row td{background:rgba(116,215,176,.018);}
+.b-row td{background:rgba(96,160,255,.016);}
+.apt-link{text-decoration:none;color:inherit;display:block;}
+.apt-link:hover .anm{color:var(--gold);}
+.anm{font-size:13px;font-weight:700;transition:color .15s;}
+.adt{font-size:10px;color:var(--mu);margin-top:1px;}
+.tp4{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;border-radius:8px;background:rgba(80,208,160,.1);color:#50D0A0;white-space:nowrap;}
+.tp5a{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;border-radius:8px;background:rgba(176,112,255,.1);color:#B070FF;white-space:nowrap;}
+.tp5b{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;border-radius:8px;background:rgba(140,100,200,.08);color:#9070C8;white-space:nowrap;}
+.tp6{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;border-radius:8px;background:rgba(100,110,130,.12);color:#8090A8;white-space:nowrap;}
+.rn{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;}
+.rn1{color:var(--gold);}.rn2{color:var(--silver);}.rn3{color:var(--bronze);}
+.sc{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.sv{font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.sb{width:28px;height:3px;background:var(--s3);border-radius:2px;overflow:hidden;}
+.sbf{height:100%;border-radius:2px;}
+.tw{display:flex;align-items:center;gap:5px;}
+.tt{width:52px;height:5px;background:var(--s3);border-radius:2px;overflow:hidden;}
+.tf{height:100%;border-radius:2px;}
+.tn{font-size:15px;font-weight:900;font-family:'IBM Plex Mono',monospace;}
+.s89{color:#F5D060;}.s84{color:#70D5A0;}.s80{color:#70A0FF;}.s76{color:#9090C8;}.s70{color:#7080A8;}.s63{color:#606878;}
+.p-lo{color:var(--green)}.p-mid{color:var(--gold)}.p-hi{color:var(--red)}.p-ok{color:var(--silver)}
+.warn{color:var(--red);}.good{color:var(--green);}
+.new-badge{font-size:9px;background:rgba(255,209,102,.2);color:var(--gold);padding:1px 5px;border-radius:3px;margin-left:4px;}
+
+/* 카드 섹션 */
+.cards-title{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.1em;margin:0 0 12px;display:flex;align-items:center;gap:8px;}
+.cards-title::after{content:'';flex:1;height:1px;background:var(--bd);}
+.card-outer{position:relative;margin-bottom:30px;}
+.scroll-btn{position:absolute;top:50%;transform:translateY(-60%);width:36px;height:64px;background:rgba(14,16,24,.8);border:1px solid rgba(255,255,255,.09);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:20;backdrop-filter:blur(6px);transition:background .2s;}
+.scroll-btn:hover{background:rgba(50,60,90,.92);}
+.scroll-btn svg{width:15px;height:15px;fill:none;stroke:rgba(255,255,255,.75);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.scroll-btn.lft{left:-16px;}
+.scroll-btn.rgt{right:-16px;}
+@media(max-width:600px){.scroll-btn{display:none;}}
+.card-scroll{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;padding:4px 2px 12px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;outline:none;}
+.card-scroll::-webkit-scrollbar{height:8px;}
+.card-scroll::-webkit-scrollbar-track{background:var(--s2);border-radius:4px;}
+.card-scroll::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px;}
+.card-scroll::-webkit-scrollbar-thumb:hover{background:#555C78;}
+
+/* 카드 */
+.card{flex:0 0 360px;background:var(--s1);border:1px solid var(--bd);border-radius:13px;overflow:hidden;scroll-snap-align:start;transition:border-color .2s,transform .2s;}
+.card:hover{transform:translateY(-2px);border-color:var(--bd2);}
+.card.cg{border-color:rgba(240,192,96,.45);}
+.card.cs{border-color:rgba(116,215,176,.28);}
+.card.cb{border-color:rgba(96,160,255,.28);}
+.card.cn{border-color:rgba(255,209,102,.2);}
+.cstripe{height:3px;}
+.str4{background:linear-gradient(90deg,#50D0A0,transparent);}
+.str5a{background:linear-gradient(90deg,#B070FF,transparent);}
+.str5b{background:linear-gradient(90deg,#9070C8,transparent);}
+.str6{background:linear-gradient(90deg,#8090A8,transparent);}
+.card-head{padding:13px 14px 8px;display:flex;justify-content:space-between;align-items:flex-start;}
+.chl .chr-rank{font-size:10px;color:var(--mu);font-family:'IBM Plex Mono',monospace;margin-bottom:3px;}
+.chl .chname{font-size:14px;font-weight:700;letter-spacing:-.3px;line-height:1.2;}
+.chl .chloc{font-size:10px;color:var(--mu);margin-top:3px;}
+.chr{text-align:right;flex-shrink:0;}
+.chscore{font-size:24px;font-weight:900;font-family:'IBM Plex Mono',monospace;line-height:1;}
+.chmedal{font-size:10px;color:var(--mu);margin-top:2px;}
+.cinforow{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;padding:0 14px 9px;}
+.ci{background:var(--s2);border-radius:5px;padding:4px 5px;text-align:center;}
+.civ{font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;white-space:nowrap;}
+.cil{font-size:9px;color:var(--mu);margin-top:1px;}
+.cprice{display:flex;gap:3px;padding:0 14px 8px;}
+.cp{flex:1;background:var(--s2);border-radius:5px;padding:4px 5px;text-align:center;}
+.cpv{font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.cpl{font-size:9px;color:var(--mu);margin-top:1px;}
+.u{color:var(--green);}.f{color:var(--mu2);}.d{color:var(--red);}
+.ctags{display:flex;flex-wrap:wrap;gap:3px;padding:0 14px 8px;}
+.tag{font-size:10px;padding:2px 6px;border-radius:4px;}
+.tbl{background:rgba(96,160,255,.12);color:#70B0FF;}
+.tgn{background:rgba(64,208,144,.12);color:#50D090;}
+.tgd{background:rgba(240,192,96,.1);color:#E0B050;}
+.tpu{background:rgba(176,112,255,.12);color:#C090F0;}
+.trd{background:rgba(255,64,80,.1);color:#FF6070;}
+.twn{background:rgba(255,160,64,.1);color:#FFA040;}
+.tgr{background:rgba(100,110,130,.15);color:var(--mu2);}
+.score-sec{padding:0 14px 9px;}
+.ssl{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.sbgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px 8px;}
+.sbi{display:flex;align-items:center;gap:4px;}
+.sbl{font-size:10px;color:var(--mu2);width:44px;flex-shrink:0;}
+.sbtrack{flex:1;height:4px;background:var(--s3);border-radius:2px;overflow:hidden;}
+.sbfill{height:100%;border-radius:2px;}
+.sbnum{font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;width:18px;text-align:right;flex-shrink:0;}
+.hbadge{font-size:9px;padding:1px 5px;border-radius:3px;margin-left:3px;}
+.hba{background:rgba(64,208,144,.15);color:var(--green);}
+.hbb{background:rgba(240,192,96,.12);color:var(--gold);}
+.hbc{background:rgba(128,128,160,.15);color:var(--mu2);}
+.hbd{background:rgba(255,64,80,.1);color:var(--red);}
+.card-btm{border-top:1px solid var(--bd);}
+.pro-con{display:grid;grid-template-columns:1fr 1fr;}
+.pcb{padding:8px 12px 10px;}
+.pcb+.pcb{border-left:1px solid var(--bd);}
+.pct{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.pct.p{color:var(--green);}.pct.c{color:var(--red);}
+.pcul{list-style:none;}
+.pcli{font-size:10px;color:var(--mu2);line-height:1.7;padding-left:8px;position:relative;}
+.pcli::before{content:'';position:absolute;left:0;top:7px;width:3px;height:3px;border-radius:50%;}
+.p .pcli::before{background:var(--green);}
+.c .pcli::before{background:var(--red);}
+
+/* 기준표 */
+.crit-box{background:var(--s1);border:1px solid var(--bd);border-radius:12px;overflow:hidden;margin-bottom:18px;}
+.crit-hdr{padding:11px 16px;border-bottom:1px solid var(--bd);font-size:13px;font-weight:700;}
+table.ct{width:100%;border-collapse:collapse;}
+.ct th{padding:6px 10px;font-size:10px;font-weight:600;color:var(--mu);text-transform:uppercase;background:var(--s2);text-align:left;}
+.ct td{padding:7px 10px;border-top:1px solid var(--bd);font-size:11px;vertical-align:top;line-height:1.6;}
+.notice{background:rgba(240,192,96,.04);border:1px solid rgba(240,192,96,.15);border-radius:9px;padding:11px 16px;font-size:11px;color:var(--mu2);line-height:1.75;margin-top:0;}
+.notice b{color:var(--gold);}
+.notice .fix{color:var(--green);font-weight:600;}
+.notice .alrt{color:var(--red);font-weight:600;}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- 헤더 -->
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="hdr-title">서울 아파트 비교 <span>스코어카드</span></div>
+    <div class="hdr-badges">
+      <div class="badge g">2026 실거래 급지 반영</div>
+      <div class="badge">12개 단지 · 100점 만점</div>
+      <div class="badge">개발호재 최신 검증</div>
+    </div>
+  </div>
+  <div class="hdr-sub">조건: 전용 59~84㎡ · 매매 10억 미만 · 역세권 도보 20분 이내 · 500세대 이상(미달 감점)</div>
+  <div class="src-row">
+    <span>세대수: 국토부·직방·부동산뱅크</span>
+    <span>역 도보: 집품·KB부동산</span>
+    <span>급지: 2026 서울 25개구 실거래 평당가</span>
+    <span>가격: 국토부 실거래가 최근 3개월 평균(2025.01~)</span>
+    <span>개발호재: 나무위키·뉴스1·서울시 정비사업정보몽땅</span>
+  </div>
+</div>
+
+<!-- 급지 -->
+<div class="section-lbl">2026 서울 25개구 급지 체계 — 실거래 평당가 기준</div>
+<div class="tier-grid">
+  <div class="tc tc1"><div class="tc-num t1c">1급지</div><div class="tc-list">강남구<br>서초구</div><div class="tc-avg">평당 7,812~8,307만 | 1~2위</div></div>
+  <div class="tc tc2"><div class="tc-num t2c">2급지</div><div class="tc-list">용산구<br>송파구</div><div class="tc-avg">평당 6,344~6,451만 | 4~5위</div></div>
+  <div class="tc tc3"><div class="tc-num t3c">3급지</div><div class="tc-list">성동·마포<br>광진·양천</div><div class="tc-avg">평당 4,135~5,746만 | 6~14위</div></div>
+  <div class="tc tc4"><div class="tc-num t4c">4급지</div><div class="tc-list">동작·중구<br>강동·<span class="tc-hl" style="color:#50D0A0">영등포</span><br>종로</div><div class="tc-avg">평당 3,814~4,642만 | 10~16위</div></div>
+  <div class="tc tc5"><div class="tc-num t5c">5급지</div><div class="tc-list">서대문·<span class="tc-hl" style="color:#B070FF">동대문</span><br>강서·은평<br><span class="tc-hl" style="color:#B070FF">성북</span>·관악</div><div class="tc-avg">평당 2,979~3,491만 | 17~26위</div></div>
+  <div class="tc tc6"><div class="tc-num t6c">6급지</div><div class="tc-list">노원·<span class="tc-hl" style="color:#909BB8">구로</span><br>중랑·강북<br>금천·도봉</div><div class="tc-avg">평당 2,180~2,699만 | 28~40위</div></div>
+</div>
+
+<!-- 배점 -->
+<div class="rubric">
+  <div class="rb"><div class="rb-dot" style="background:var(--c1)"></div><span class="rb-label">급지</span><span class="rb-pt" style="color:var(--c1)">18점</span><span class="rb-s">★</span></div>
+  <div class="rb"><div class="rb-dot" style="background:var(--c7)"></div><span class="rb-label">개발호재</span><span class="rb-pt" style="color:var(--c7)">18점</span><span class="rb-s">★</span></div>
+  <div class="rb"><div class="rb-dot" style="background:var(--c8)"></div><span class="rb-label">가격</span><span class="rb-pt" style="color:var(--c8)">15점</span><span class="rb-s">★</span></div>
+  <div class="rb"><div class="rb-dot" style="background:var(--c3)"></div><span class="rb-label">역세권</span><span class="rb-pt" style="color:var(--c3)">13점</span></div>
+  <div class="rb"><div class="rb-dot" style="background:var(--c2)"></div><span class="rb-label">세대수</span><span class="rb-pt" style="color:var(--c2)">11점</span></div>
+  <div class="rb"><div class="rb-dot" style="background:var(--c4)"></div><span class="rb-label">주거편의</span><span class="rb-pt" style="color:var(--c4)">10점</span></div>
+  <div class="rb"><div class="rb-dot" style="background:var(--c5)"></div><span class="rb-label">인프라</span><span class="rb-pt" style="color:var(--c5)">10점</span></div>
+  <div class="rb"><div class="rb-dot" style="background:var(--c6)"></div><span class="rb-label">학군</span><span class="rb-pt" style="color:var(--c6)">5점</span></div>
+</div>
+
+<!-- 순위표 -->
+<div class="rank-box">
+  <div class="rank-hdr">
+    <div class="rh-title">종합 순위 — 헤더 클릭시 해당 항목으로 재정렬 · 단지명 클릭 → 상세카드 이동</div>
+    <div class="rh-note">가격 = 최근 3개월(2025.01~) 평균 실거래가 · ★ 500세대 미만 세대수 감점</div>
+  </div>
+  <div class="tscroll">
+  <table class="rt" id="rankTable">
+    <thead><tr>
+      <th style="width:30px">#</th>
+      <th class="tl" style="min-width:170px">단지명</th>
+      <th style="min-width:78px">급지</th>
+      <th class="s" data-k="급지">급지<br><small>/18</small></th>
+      <th class="s" data-k="개발호재">개발<br><small>/18</small></th>
+      <th class="s" data-k="가격">가격<br><small>/15</small></th>
+      <th class="s" data-k="역세권">역세권<br><small>/13</small></th>
+      <th class="s" data-k="세대수">세대<br><small>/11</small></th>
+      <th class="s" data-k="주거">주거<br><small>/10</small></th>
+      <th class="s" data-k="인프라">인프라<br><small>/10</small></th>
+      <th class="s" data-k="학군">학군<br><small>/5</small></th>
+      <th>3개월 평균가<br><small>(30평)</small></th>
+      <th class="s" data-k="total" style="min-width:108px">총점<br><small>/100</small></th>
+    </tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  </div>
+</div>
+
+<!-- 상세카드 -->
+<div class="cards-title" id="card-section">단지별 상세 카드 — 점수 높은 순 (커서 진입 후 휠로 좌우 스크롤)</div>
+<div class="card-outer" id="cardOuter">
+  <button class="scroll-btn lft" onclick="scrollCards(-1)"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg></button>
+  <div class="card-scroll" id="cardScroll" tabindex="0"></div>
+  <button class="scroll-btn rgt" onclick="scrollCards(1)"><svg viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></button>
+</div>
+
+<!-- 채점 기준 -->
+<div class="crit-box">
+  <div class="crit-hdr">채점 기준 상세</div>
+  <div class="tscroll">
+  <table class="ct" style="min-width:680px;">
+    <tr><th style="min-width:120px">항목 (배점)</th><th style="min-width:120px">최고점</th><th>중간점</th><th>최저점</th><th style="min-width:160px">이 분석 최고/최저</th></tr>
+    <tr><td style="color:var(--c1);font-weight:600">급지 (18점)</td><td style="color:var(--green)">18pt: 13위 이내(4급지↑)</td><td>15pt: 18위(5급지상) / 12pt: 24위</td><td>8pt: 29위↓(6급지)</td><td>최고: 신길삼성·문래현대·상도대림 18pt / 최저: 온수 8pt</td></tr>
+    <tr><td style="color:var(--c7);font-weight:600">개발호재 (18점)</td><td style="color:var(--green)">18pt: 착공확정 다중호재</td><td>14pt: 공사중 복합 / 10pt: 공사중 단일</td><td>4~5pt: 간접수혜·없음</td><td>최고: 이문e편한세상 18pt / 최저: 온수 4pt</td></tr>
+    <tr><td style="color:var(--c8);font-weight:600">가격 (15점)</td><td style="color:var(--green)">15pt: 3개월평균 6억↓</td><td>13pt: 6.5억 / 12pt: 7억 / 11pt: 7.5억 / 10pt: 8억</td><td>6pt: 9억 / 4pt: 9.5억↑</td><td>최고: 래미안월곡·온수 12pt / 최저: 이문e편한세상·래미안크리시엘 6~8pt</td></tr>
+    <tr><td style="color:var(--c3);font-weight:600">역세권 (13점)</td><td style="color:var(--green)">13pt: 도보5분↓ 더블</td><td>11pt: 단선5분 or 8분더블 / 9pt: 단선8분 / 7pt: 단선10분</td><td>4pt: 13분↑</td><td>최고: 이문e편한세상·온수 13pt / 최저: 꿈의숲 4pt</td></tr>
+    <tr><td style="color:var(--c2);font-weight:600">세대수 (11점)</td><td style="color:var(--green)">11pt: 2,000세대↑</td><td>9pt: 1,200+ / 8pt: 800+ / 6pt: 600+ / 5pt: 500+</td><td>3pt: 500세대 미만</td><td>최고: 월곡두산위브 11pt / 최저: 신길삼성·문래현대 3pt</td></tr>
+    <tr><td style="color:var(--c4);font-weight:600">주거편의 (10점)</td><td style="color:var(--green)">10pt: 2010↑ 계단식+지하주차+커뮤니티</td><td>8pt: 2003~09년 계단식</td><td>4pt: 1980년대 복도식·주차없음</td><td>최고: 온수·꿈의숲 10pt / 최저: 신길·문래 4pt</td></tr>
+    <tr><td style="color:var(--c5);font-weight:600">인프라 (10점)</td><td style="color:var(--green)">10pt: 대형마트+백화점+종합병원+상업지구</td><td>9pt: 마트+상권 / 8pt: 소규모상권</td><td>7pt: 인프라 취약</td><td>최고: 이문e편한세상 10pt / 최저: 상도대림 7pt</td></tr>
+    <tr><td style="color:var(--c6);font-weight:600">학군 (5점)</td><td style="color:var(--green)">5pt: 초중고 도보+학원가</td><td>4pt: 초등 도보+중학교 양호</td><td>3pt: 고교 외곽배정</td><td>최고: 래미안크리시엘 5pt / 최저: 문래현대·온수 3pt</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="notice" style="margin-top:16px;">
+  <b>개발호재 최신 검증 결과</b><br>
+  · <span class="alrt">신안산선 개통 목표 정정</span>: 2025.04 광명 붕괴사고·2025.12 여의도 붕괴사고 → <b>2028년 12월로 재연기</b> (나무위키·SBS Biz 2025.12 보도). 신길삼성 호재 점수 하향 반영.<br>
+  · <span class="fix">동북선</span>: <b>2027년 11월 준공·개통 목표 유지</b> (뉴스1 2026.03.12·기획재정부 2025.02 보도자료). 현재 공사 진행 중.<br>
+  · <span class="fix">추가 단지</span>: 상도동 대림아파트(동작구 4급지, 7호선 상도역 역세권, 서부선 경전철 추진 호재) 신규 편입.<br>
+  · 종암래미안세레니티 최근 3개월 평균 9.94억으로 사실상 10억 초과 → 가격 점수 최하점(3pt) 적용.<br>
+  · <b>서울 전역 토지거래허가구역(~2026.12.31) · LTV 40% · 실거주 2년 의무.</b>
+</div>
+
+</div>
+
+<script>
+const apts = [
+  {id:"이문e편한세상",  area:"동대문구 이문동", year:2003, units:1378, tier:"5급지 18위", tcls:"tp5a", str:"str5a",
+   급지:15, 개발호재:18, 가격:6, 역세권:13, 세대수:11, 주거:8, 인프라:10, 학군:4,
+   avgPrice:9.31, trend:"보합",
+   역세권text:"1호선 신이문역 3분+6호선 돌곶이역 5분",
+   horae:{t:"동북선 2027.11 공사중 + 이문뉴타운 + 동부간선 지하화 + 홍릉바이오단지", g:"A"},
+   tags:["1호선 신이문역 3분","6호선 돌곶이역 5분","더블역세권","동북선 2027 공사중","이문뉴타운+홍릉바이오","계단식"],
+   tagcls:["tbl","tbl","tgn","tpu","tgd","tgn"],
+   pros:["더블역세권 만점 — 1·6호선 3·5분","동대문구 18위(성북 24위보다 6계단 상위)","이문뉴타운+동북선+동부간선 3중 호재","코스트코·경희의료원 도보권"],
+   cons:["3개월 평균 9.31억 → 10억 목전","2003년 구축·지하주차 동간 미연결","강남 직결 없음(1호선)"]},
+
+  {id:"월곡두산위브",  area:"성북구 하월곡동", year:2003, units:2197, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
+   급지:12, 개발호재:14, 가격:11, 역세권:11, 세대수:11, 주거:8, 인프라:10, 학군:4,
+   avgPrice:8.44, trend:"+9.2%",
+   역세권text:"6호선 월곡역 5분",
+   horae:{t:"동북선 2027.11 공사중 → 왕십리 환승", g:"B"},
+   tags:["6호선 월곡역 5분","2,197세대 최대","59건 유동성1위","홈플러스 연결통로","동북선 왕십리환승 2027","계단식"],
+   tagcls:["tbl","tgn","tgn","tgd","tpu","tgn"],
+   pros:["2,197세대 세대수 만점","59건 거래 유동성 압도적 1위","월곡역 5분+홈플러스 연결통로","동북선 왕십리 환승 → 강남 접근↑"],
+   cons:["성북구 24위(동대문·영등포보다 하위)","6호선 단일노선(강남 직결 없음)","동북선 2027 전까지 호재 대기"]},
+
+  {id:"이문현대",     area:"동대문구 이문동", year:2000, units:601, tier:"5급지 18위", tcls:"tp5a", str:"str5a",
+   급지:15, 개발호재:14, 가격:11, 역세권:11, 세대수:6, 주거:6, 인프라:9, 학군:4,
+   avgPrice:8.12, trend:"+4.0%",
+   역세권text:"1호선 신이문역 5분",
+   horae:{t:"동북선 2027.11 공사중 + 이문뉴타운 + 동부간선 지하화", g:"B"},
+   tags:["1호선 신이문역 5분","5급지 18위 동대문구","이문뉴타운·동북선","7.08억 최저 진입","복도식"],
+   tagcls:["tbl","tgn","tpu","tgd","twn"],
+   pros:["이문e편한세상 대비 ~1억 저렴","동대문구 18위 동일 급지·생활권","7.08억 저층 실거래 확인"],
+   cons:["9건 거래 — 유동성 최저","복도식 구조","601세대 소형"]},
+
+  {id:"래미안월곡",   area:"성북구 하월곡동", year:2006, units:1372, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
+   급지:12, 개발호재:8, 가격:11, 역세권:9, 세대수:9, 주거:8, 인프라:10, 학군:4,
+   avgPrice:8.77, trend:"+5.6%",
+   역세권text:"6호선 월곡역 8분",
+   horae:{t:"동북선 2027.11 공사중 간접수혜(월곡역→6호선 환승)", g:"C"},
+   tags:["6호선 월곡역 8분","1,372세대 래미안","6.0억 저층 진입","지하주차 연결","동북선 간접수혜","계단식"],
+   tagcls:["tbl","tgn","tgd","tgd","tpu","tgn"],
+   pros:["저층 6.0억 → 예산 여유","1,372세대 래미안 대단지","지하주차 연결·주차 여유","꾸준한 우상향 +5.6%"],
+   cons:["3개월 평균 8.77억으로 상승 중","월곡역 도보 고가도로 우회","동북선 외 호재 제한"]},
+
+  {id:"신길삼성",     area:"영등포구 신길동", year:1984, units:384, tier:"4급지 13위", tcls:"tp4", str:"str4",
+   급지:18, 개발호재:12, 가격:11, 역세권:11, 세대수:3, 주거:4, 인프라:10, 학군:4,
+   avgPrice:8.42, trend:"+26.6%",
+   역세권text:"7호선 신풍역 7분+신림선 보라매공원역 10분",
+   horae:{t:"신안산선 2028년↑ 연기(붕괴사고), 재건축 조합 난항", g:"B"},
+   tags:["7호선 신풍역 7분","신림선 더블역세권","4급지 영등포 최고","신안산선 2028년↑ 재연기","재건축 조합 진행중","★500세대 미달","복도식"],
+   tagcls:["tbl","tbl","tgn","twn","twn","trd","twn"],
+   pros:["영등포 4급지 — 분석 최상위 급지","전년比 +26.6% — 분석 최고 상승률","신안산선 개통 후 여의도 3정거장","재건축 완공 후 569세대"],
+   cons:["신안산선 2028년 이후 재연기(붕괴 2회)","384세대 — 500 미달 최하점","1984년 구축·주차 0.57대","재건축 조합 운영 난항"]},
+
+  {id:"래미안크리시엘", area:"성북구 종암동", year:2003, units:1168, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
+   급지:12, 개발호재:10, 가격:8, 역세권:9, 세대수:9, 주거:8, 인프라:10, 학군:5,
+   avgPrice:9.09, trend:"+6.8%",
+   역세권text:"6호선 고려대역 8분",
+   horae:{t:"동북선 고려대역 2027.11 직접수혜", g:"B"},
+   tags:["6호선 고려대역 8분","1,168세대 래미안","학군 최고(5/5)","고려대·사대부중고 도보","동북선 직접수혜","계단식"],
+   tagcls:["tbl","tgn","tgd","tgd","tpu","tgn"],
+   pros:["학군 만점 — 고려대·사대부중고","1,168세대 래미안 브랜드","꾸준한 우상향 +6.8%"],
+   cons:["3개월 평균 9.09억 → 10억 근접","동북선 외 뚜렷한 호재 부족","26건 유동성 낮음"]},
+
+  {id:"삼선푸르지오",  area:"성북구 삼선동2가", year:2008, units:864, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
+   급지:12, 개발호재:5, 가격:12, 역세권:7, 세대수:8, 주거:9, 인프라:9, 학군:5,
+   avgPrice:9.10, trend:"+8.7%",
+   역세권text:"4호선 한성대입구역 10분",
+   horae:{t:"뚜렷한 개발호재 없음", g:"D"},
+   tags:["4호선 한성대입구역 10분","864세대 2008년","5.81억 최저 진입가","종로·광화문 직접","가격 등락 폭 큼","계단식"],
+   tagcls:["tbl","tgn","tgd","tgn","twn","tgn"],
+   pros:["5.81억 — 분석 단지 최저 진입가","2008년 계단식·지하주차","종로·광화문 4호선 직접 접근"],
+   cons:["역세권 취약(10분 단일노선)","26Q1 9.67억 급등 → 10억 목전","분기별 가격 등락 폭 최대"]},
+
+  {id:"문래현대1차",  area:"영등포구 문래동6가", year:1986, units:264, tier:"4급지 13위", tcls:"tp4", str:"str4",
+   급지:18, 개발호재:12, 가격:11, 역세권:11, 세대수:3, 주거:4, 인프라:9, 학군:3,
+   avgPrice:8.34, trend:"+14.5%",
+   역세권text:"2호선 도림천역 8분+5호선 양평역 11분",
+   horae:{t:"7개단지 통합리모델링 추진 + 문래동4가 재개발", g:"B"},
+   tags:["2호선 도림천역 8분","5호선 양평역 11분","4급지 영등포 최고","통합리모델링 1,973세대","문래4가 재개발","★500세대 미달","복도식"],
+   tagcls:["tbl","tbl","tgn","tgd","tgd","trd","twn"],
+   pros:["영등포 4급지 최상위 급지","7개단지 통합리모델링→2,000세대 기대","문래동4가 재개발+목동학원가 인접","+14.5% 상승"],
+   cons:["264세대 — 500미달 최하점","1986년 구축·준공업지역 인접","리모델링 인허가 수년 소요"]},
+
+  {id:"온수힐스테이트", area:"구로구 온수동", year:2010, units:999, tier:"6급지 29위", tcls:"tp6", str:"str6",
+   급지:8, 개발호재:4, 가격:12, 역세권:13, 세대수:9, 주거:10, 인프라:8, 학군:3,
+   avgPrice:7.85, trend:"+1.0%",
+   역세권text:"1호선+7호선 온수역 5분",
+   horae:{t:"뚜렷한 개발호재 없음", g:"D"},
+   tags:["1호선+7호선 온수역 5분","더블역세권","999세대 2010년 힐스테이트","6급지 최하","개발호재 없음","계단식"],
+   tagcls:["tbl","tgn","tgn","tgr","tgr","tgn"],
+   pros:["1·7호선 더블역세권 5분 — 역세권 최고","2010년 준신축+힐스테이트+지하주차","7.85억 평균 — 예산 여유"],
+   cons:["6급지 29위 — 분석 최하 급지","+1.0% 사실상 보합","개발호재 없음"]},
+
+  {id:"종암래미안세레니티",area:"성북구 종암동", year:2009, units:500, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
+   급지:12, 개발호재:5, 가격:3, 역세권:7, 세대수:5, 주거:9, 인프라:9, 학군:5,
+   avgPrice:9.94, trend:"+2.6%",
+   역세권text:"6호선 고려대역 10분",
+   horae:{t:"동북선 고려대역 간접수혜", g:"D+"},
+   tags:["6호선 고려대역 10분","62건 최다 거래","2009년 래미안","3개월 평균 9.94억","10억 초과 주의","계단식"],
+   tagcls:["tbl","tgn","tgd","twn","trd","tgn"],
+   pros:["62건 거래 — 유동성 압도적 1위","2009년 래미안 계단식","저층 실거래 일부 6억대"],
+   cons:["3개월 평균 9.94억 → 사실상 10억 초과","가격 점수 최하(3pt)","역세권·호재 모두 취약"]},
+
+  {id:"꿈의숲푸르지오", area:"성북구 하월곡동", year:2010, units:714, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
+   급지:12, 개발호재:5, 가격:10, 역세권:4, 세대수:7, 주거:10, 인프라:8, 학군:4,
+   avgPrice:8.47, trend:"+8.4%",
+   역세권text:"4호선 미아사거리역 13분",
+   horae:{t:"동북선 미아사거리역 간접수혜", g:"D+"},
+   tags:["4호선 미아사거리역 13분","714세대 2010년","꿈의숲 공원 인접","역세권 최하","최저 8.1억","계단식"],
+   tagcls:["trd","tgn","tgn","twn","twn","tgn"],
+   pros:["2010년 준신축·커뮤니티·지하주차","꿈의숲 대형공원 인접","+8.4% 상승 가속"],
+   cons:["역세권 최하(13분 단일)","9건 거래 유동성 최저","최저가 8.1억→10억 내 여유 없음"]},
+
+  {id:"상도동 대림",   area:"동작구 상도동", year:1995, units:300, tier:"4급지 10위", tcls:"tp4", str:"str4",
+   isNew:true,
+   급지:18, 개발호재:9, 가격:12, 역세권:9, 세대수:3, 주거:5, 인프라:8, 학군:4,
+   avgPrice:8.28, trend:"+12.7%",
+   역세권text:"7호선 상도역 도보 5~7분",
+   horae:{t:"상도14·15구역 재개발(4,395세대 공급예정) + 서부선 경전철 추진(신상도역 예정)", g:"B"},
+   tags:["7호선 상도역 5~7분","4급지 동작구 10위","상도14·15구역 재개발","서부선 경전철 추진","★300세대 추정 소단지","복도식 추정"],
+   tagcls:["tbl","tgn","tgd","tpu","trd","twn"],
+   pros:["동작구 4급지 10위 — 영등포(13위)보다 상위","상도14·15구역 재개발→4,395세대 낙수효과","서부선 경전철 신상도역 예정","7호선 강남(논현·학동) 직결","노량진 학원가 도보권"],
+   cons:["~300세대 소단지(세대수 최하점)","1995년 구축(30년)","재개발 낙수는 간접수혜 수준","서부선 개통 일정 불확실"]}
+];
+
+// 총점 계산
+apts.forEach(a => {
+  a.total = a.급지+a.개발호재+a.가격+a.역세권+a.세대수+a.주거+a.인프라+a.학군;
+});
+apts.sort((a,b) => b.total-a.total);
+
+function priceClass(p) {
+  if(p >= 9.5) return "p-hi";
+  if(p >= 8.5) return "p-mid";
+  if(p >= 7.5) return "p-ok";
+  return "p-lo";
+}
+function totalColor(t) {
+  if(t >= 88) return "s89";
+  if(t >= 82) return "s84";
+  if(t >= 78) return "s80";
+  if(t >= 72) return "s76";
+  if(t >= 66) return "s70";
+  return "s63";
+}
+function hbCls(g){ return {A:"hba",B:"hbb","B+":"hbb","B-":"hbb",C:"hbc",D:"hbd","D+":"hbd"}[g]||"hbc"; }
+
+// 테이블 렌더
+let sortState = {k:null,d:-1};
+function renderTable(data) {
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = data.map((a,i) => {
+    const r=i+1, rc=r===1?"rn1":r===2?"rn2":r===3?"rn3":"";
+    const rowcls=r===1?"g-row":r===2?"s-row":r===3?"b-row":"";
+    const pc = priceClass(a.avgPrice);
+    const medal = r===1?"🥇":r===2?"🥈":r===3?"🥉":"";
+    const newBadge = a.isNew ? '<span class="new-badge">신규추천</span>' : "";
+    return `<tr class="${rowcls}">
+      <td><span class="rn ${rc}">${String(r).padStart(2,"0")}</span></td>
+      <td class="tl"><a href="#card-${a.id}" class="apt-link" onclick="scrollToCard('${a.id}')">
+        <div class="anm">${medal}${a.id}${a.units<500?"★":""}${newBadge}</div>
+        <div class="adt">${a.area} · ${a.year}년 · ${a.units.toLocaleString()}세대</div>
+      </a></td>
+      <td><span class="${a.tcls}">${a.tier}</span></td>
+      ${["급지","개발호재","가격","역세권","세대수","주거","인프라","학군"].map((k,ki)=>{
+        const max=[18,18,15,13,11,10,10,5][ki];
+        const c=["var(--c1)","var(--c7)","var(--c8)","var(--c3)","var(--c2)","var(--c4)","var(--c5)","var(--c6)"][ki];
+        const v=a[k]; const w=Math.round(v/max*100);
+        const warnCls=(k==="세대수"&&a.units<500)?"warn":"";
+        return `<td><div class="sc"><div class="sv ${warnCls}" style="color:${c}">${v}</div><div class="sb"><div class="sbf" style="width:${w}%;background:${c}"></div></div></div></td>`;
+      }).join("")}
+      <td><span class="price-cell ${pc}" style="font-family:'IBM Plex Mono';font-size:12px;font-weight:600">${a.avgPrice.toFixed(2)}억</span></td>
+      <td><div class="tw"><div class="tt"><div class="tf" style="width:${a.total}%;background:${a.total>=85?'var(--gold)':a.total>=78?'var(--silver)':a.total>=70?'var(--bronze)':'#707090'}"></div></div><span class="tn ${totalColor(a.total)}">${a.total}</span></div></td>
+    </tr>`;
+  }).join("");
+}
+
+// 정렬
+document.querySelectorAll("th.s").forEach(th => {
+  th.addEventListener("click", () => {
+    const k = th.dataset.k;
+    if(sortState.k===k) sortState.d*=-1;
+    else { sortState.k=k; sortState.d=-1; }
+    document.querySelectorAll("th.s").forEach(h=>h.classList.remove("asc","dsc"));
+    th.classList.add(sortState.d===-1?"dsc":"asc");
+    const sorted=[...apts].sort((a,b)=>(b[k]-a[k])*sortState.d);
+    renderTable(sorted);
+  });
+});
+
+// 카드 렌더
+function renderCards() {
+  const scroll = document.getElementById("cardScroll");
+  scroll.innerHTML = apts.map((a,i) => {
+    const r=i+1;
+    const goldCls=r===1?" cg":r===2?" cs":r===3?" cb":a.isNew?" cn":"";
+    const medal=r===1?"🥇 종합 1위":r===2?"🥈 2위":r===3?"🥉 3위":`${r}위`;
+    const tags=a.tags.map((t,j)=>`<span class="tag ${a.tagcls[j]}">${t}</span>`).join("");
+    const uc=a.trend.startsWith("+")?"u":a.trend.startsWith("-")?"d":"f";
+    const hbc=hbCls(a.horae.g);
+    const pc=priceClass(a.avgPrice);
+    const newBadge=a.isNew?'<span style="font-size:9px;background:rgba(255,209,102,.2);color:var(--gold);padding:1px 5px;border-radius:3px;margin-left:5px">신규추천</span>':"";
+    return `<div class="card${goldCls}" id="card-${a.id}">
+      <div class="cstripe ${a.str}"></div>
+      <div class="card-head">
+        <div class="chl">
+          <div class="chr-rank">${r}위 · ${a.area}</div>
+          <div class="chname">${a.id}${newBadge}</div>
+          <div class="chloc">${a.year}년 · ${a.units.toLocaleString()}세대 · ${a.tier}</div>
+        </div>
+        <div class="chr">
+          <div class="chscore ${totalColor(a.total)}">${a.total}</div>
+          <div class="chmedal">${medal}</div>
+        </div>
+      </div>
+      <div class="cinforow">
+        <div class="ci"><div class="civ">${a.units.toLocaleString()}</div><div class="cil">세대수</div></div>
+        <div class="ci"><div class="civ">${a.year}</div><div class="cil">입주년도</div></div>
+        <div class="ci"><div class="civ" style="font-size:10px">${a.tier}</div><div class="cil">급지</div></div>
+        <div class="ci"><div class="civ ${uc}">${a.trend}</div><div class="cil">상승률</div></div>
+        <div class="ci"><div class="civ">${a.avgPrice.toFixed(2)}억</div><div class="cil">3개월평균</div></div>
+      </div>
+      <div class="cprice">
+        <div class="cp"><div class="cpv ${pc}">${a.avgPrice.toFixed(2)}억</div><div class="cpl">3개월 평균가</div></div>
+        <div class="cp"><div class="cpv">${a.가격}pt</div><div class="cpl">가격점수</div></div>
+        <div class="cp"><div class="cpv" style="font-size:10px;color:var(--mu2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${a.역세권text.split("+")[0].trim()}</div><div class="cpl">가까운 역</div></div>
+        <div class="cp"><div class="cpv">${a.역세권}pt</div><div class="cpl">역세권점수</div></div>
+      </div>
+      <div class="ctags">${tags}</div>
+      <div class="score-sec">
+        <div class="ssl">항목별 점수</div>
+        <div class="sbgrid">
+          ${[["급지","var(--c1)",18],["개발호재","var(--c7)",18],["가격","var(--c8)",15],["역세권","var(--c3)",13],
+             ["세대수","var(--c2)",11],["주거","var(--c4)",10],["인프라","var(--c5)",10],["학군","var(--c6)",5]]
+            .map(([k,c,max])=>{
+              const v=a[k], w=Math.round(v/max*100);
+              const wc=(k==="세대수"&&a.units<500)?"warn":"";
+              const ksuffix=k==="개발호재"?` <span class="hbadge ${hbc}">${a.horae.g}</span>`:"";
+              return `<div class="sbi"><div class="sbl" style="color:${c}">${k==="개발호재"?"개발":k==="역세권"?"역세":""+k}</div><div class="sbtrack"><div class="sbfill" style="width:${w}%;background:${c}"></div></div><div class="sbnum ${wc}" style="color:${c}">${v}${ksuffix}</div></div>`;
+            }).join("")}
+        </div>
+      </div>
+      <div class="score-sec" style="padding-top:0">
+        <div class="ssl">개발호재 <span class="hbadge ${hbc}" style="font-size:10px">${a.horae.g}등급</span></div>
+        <div style="font-size:10px;color:var(--mu2);line-height:1.65">${a.horae.t}</div>
+      </div>
+      <div class="card-btm">
+        <div class="pro-con">
+          <div class="pcb p"><div class="pct p">강점</div><ul class="pcul p">${a.pros.map(p=>`<li class="pcli">${p}</li>`).join("")}</ul></div>
+          <div class="pcb c"><div class="pct c">약점</div><ul class="pcul c">${a.cons.map(c=>`<li class="pcli">${c}</li>`).join("")}</ul></div>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// 카드로 앵커 이동
+function scrollToCard(id) {
+  setTimeout(() => {
+    const el = document.getElementById("card-"+id);
+    if(!el) return;
+    const scroll = document.getElementById("cardScroll");
+    const outerRect = scroll.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    scroll.scrollLeft += (elRect.left - outerRect.left) - 8;
+  }, 100);
+}
+
+// 좌우 버튼
+function scrollCards(dir) {
+  document.getElementById("cardScroll").scrollBy({left: dir*372, behavior:"smooth"});
+}
+
+// 휠 → 좌우 스크롤 (카드 섹션 안에 커서가 있을 때)
+(function(){
+  const outer = document.getElementById("cardOuter");
+  const scroll = document.getElementById("cardScroll");
+  let inside = false;
+  outer.addEventListener("mouseenter", () => inside=true);
+  outer.addEventListener("mouseleave", () => inside=false);
+  window.addEventListener("wheel", (e) => {
+    if(!inside) return;
+    // 수직 스크롤을 가로 스크롤로 변환
+    e.preventDefault();
+    scroll.scrollBy({left: e.deltaY * 1.5, behavior:"smooth"});
+  }, {passive:false});
+})();
+
+// 초기 렌더
+renderTable(apts);
+renderCards();
+</script>
+</body>
+</html>
