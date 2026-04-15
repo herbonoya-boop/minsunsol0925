@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>서울 아파트 스코어카드 2026</title>
+<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=fe55f95ef1e4c5213286272b49b6dc8d"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -263,6 +264,258 @@ table.ct{width:100%;border-collapse:collapse;}
 </div>
 
 <!-- 상세카드 -->
+
+
+<!-- ===== 노선별 역세권 섹션 ===== -->
+<div style="margin-bottom:32px;" id="lineSection">
+  <div class="section-lbl" style="margin-bottom:14px;">노선별 역세권 단지 — 노선 클릭 시 해당 단지 표시 · 단지 클릭 시 상세카드로 이동</div>
+
+  <!-- 노선 버튼 영역 -->
+  <div id="lineBtnArea"></div>
+
+  <!-- 결과 패널 -->
+  <div id="lineResult" style="display:none;margin-top:14px;">
+    <div id="lineResultHeader" style="font-size:11px;color:var(--mu2);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bd);"></div>
+    <div id="lineResultCards" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+  </div>
+</div>
+
+<style>
+.lbtn{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;padding:5px 12px;border-radius:20px;
+  border:1.5px solid;background:transparent;
+  cursor:pointer;transition:all .18s;font-family:'Noto Sans KR',sans-serif;
+  font-weight:500;white-space:nowrap;
+}
+.lbtn:hover{filter:brightness(1.25);}
+.lbtn.active{color:#fff !important;}
+.lbtn.inactive{opacity:.3;cursor:default;filter:none;}
+.lbtn .ldot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.lgrp-label{
+  font-size:10px;font-weight:700;color:var(--mu);
+  text-transform:uppercase;letter-spacing:.1em;
+  width:100%;margin:8px 0 4px;
+  display:flex;align-items:center;gap:8px;
+}
+.lgrp-label::after{content:'';flex:1;height:1px;background:var(--bd);}
+.lapt-card{
+  background:var(--s1);border-radius:10px;
+  border:1px solid var(--bd);border-left:3px solid;
+  padding:12px 14px;cursor:pointer;
+  flex:0 0 auto;min-width:190px;max-width:220px;
+  transition:transform .15s,box-shadow .15s;
+}
+.lapt-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.3);}
+.lapt-name{font-size:13px;font-weight:700;margin-bottom:3px;display:flex;justify-content:space-between;align-items:center;}
+.lapt-score{font-size:15px;font-weight:900;font-family:'IBM Plex Mono',monospace;}
+.lapt-station{font-size:10px;margin-bottom:6px;font-weight:500;}
+.lapt-meta{display:flex;gap:5px;align-items:center;}
+.lapt-tier{font-size:10px;font-weight:600;padding:1px 7px;border-radius:8px;}
+.lapt-price{font-size:10px;color:var(--mu2);font-family:'IBM Plex Mono',monospace;}
+.lapt-badge{font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(255,64,80,.1);color:#FF6070;}
+</style>
+
+<script>
+(function(){
+
+/* ── 노선 정의 ── */
+const LINES = [
+  /* group: 현재 */
+  {key:"L1",  label:"1호선",        color:"#0052A4", group:"현재 운행 노선"},
+  {key:"L2",  label:"2호선",        color:"#00A84D", group:"현재 운행 노선"},
+  {key:"L3",  label:"3호선",        color:"#EF7C1C", group:"현재 운행 노선"},
+  {key:"L4",  label:"4호선",        color:"#00A5DE", group:"현재 운행 노선"},
+  {key:"L5",  label:"5호선",        color:"#996CAC", group:"현재 운행 노선"},
+  {key:"L6",  label:"6호선",        color:"#CD7C2F", group:"현재 운행 노선"},
+  {key:"L7",  label:"7호선",        color:"#747F00", group:"현재 운행 노선"},
+  {key:"L8",  label:"8호선",        color:"#E6186C", group:"현재 운행 노선"},
+  {key:"L9",  label:"9호선",        color:"#BDB092", group:"현재 운행 노선"},
+  {key:"UI",  label:"우이신설선",    color:"#B7C452", group:"현재 운행 노선"},
+  {key:"SIN", label:"신림선",        color:"#6789CA", group:"현재 운행 노선"},
+  {key:"SB",  label:"수인·분당선",  color:"#F5A200", group:"현재 운행 노선"},
+  {key:"GYG", label:"경의·중앙선",  color:"#77C4A3", group:"현재 운행 노선"},
+  {key:"AIR", label:"공항철도",      color:"#0090D2", group:"현재 운행 노선"},
+  /* group: 예정 */
+  {key:"DNB", label:"동북선",        color:"#E31E24", group:"개통 예정 노선"},
+  {key:"SINA",label:"신안산선",      color:"#0070BB", group:"개통 예정 노선"},
+  /* group: GTX */
+  {key:"GTXA",label:"GTX-A",         color:"#FF6600", group:"GTX"},
+  {key:"GTXB",label:"GTX-B",         color:"#0080FF", group:"GTX"},
+  {key:"GTXC",label:"GTX-C",         color:"#00A050", group:"GTX"},
+];
+
+/* ── 단지별 노선·역 매핑 ── */
+const APT_LINES = {
+  "이문e편한세상": {
+    L1:"신이문역 도보 3분",
+    L6:"돌곶이역 도보 5분",
+    DNB:"동북선 개통 예정 2027(수혜 간접)"
+  },
+  "이문현대": {
+    L1:"신이문역 도보 5분",
+    DNB:"동북선 수혜(이문 생활권 2027)"
+  },
+  "월곡두산위브": {
+    L6:"월곡역 도보 5분",
+    DNB:"동북선 환승 경유 수혜"
+  },
+  "래미안월곡": {
+    L4:"미아사거리역 약 12분",
+    DNB:"신미아역 직접수혜 255m(2027)"
+  },
+  "꿈의숲푸르지오": {
+    L4:"미아사거리역 13분",
+    DNB:"신미아역 직접수혜(2027)"
+  },
+  "래미안크리시엘": {
+    L6:"고려대역 도보 8분",
+    DNB:"종암경찰서역 직접수혜(2027)"
+  },
+  "종암래미안세레니티": {
+    L6:"고려대역 도보 10분",
+    DNB:"종암경찰서역 직접수혜(2027)"
+  },
+  "삼선푸르지오": {
+    L4:"한성대입구역 도보 10분"
+  },
+  "신길삼성": {
+    L7:"신풍역 도보 7분",
+    SIN:"보라매공원역 도보 10분",
+    SINA:"신풍역(신안산선 2028+ 예정)"
+  },
+  "문래현대1차": {
+    L2:"도림천역 도보 8분",
+    L5:"양평역 도보 11분",
+    GTXA:"2호선→삼성 환승(GTX-A 2026 하반기)",
+    GTXC:"2호선→삼성 환승(GTX-C 2028+)"
+  },
+  "온수힐스테이트": {
+    L1:"온수역 도보 5분",
+    L7:"온수역 도보 5분",
+    GTXA:"7호선→수서 환승(GTX-A 현재 이용가능)"
+  },
+  "상도동 대림": {
+    L7:"상도역 도보 5~7분",
+    GTXA:"7호선→수서 환승(GTX-A 현재 이용가능)"
+  },
+  "등촌마을서광": {
+    L9:"등촌역 도보 약 10분",
+    GTXA:"9호선→삼성 환승(GTX-A 2026 하반기)",
+    GTXC:"9호선→삼성 환승(GTX-C 2028+)"
+  },
+  "가양2단지성지": {
+    L9:"양천향교역 도보 5~9분",
+    GTXA:"9호선→삼성 환승(GTX-A 2026 하반기)",
+    GTXC:"9호선→삼성 환승(GTX-C 2028+)"
+  },
+};
+
+/* ── 단지 총점 가져오기 ── */
+function aptInfo(id){
+  if(typeof apts==='undefined') return {total:0,tier:'',avgPrice:0};
+  return apts.find(a=>a.id===id)||{total:0,tier:'',avgPrice:0};
+}
+
+/* ── 버튼 그룹 렌더 ── */
+const btnArea = document.getElementById('lineBtnArea');
+const groups = [...new Set(LINES.map(l=>l.group))];
+let activeKey = null;
+const btnMap = {};
+
+groups.forEach(g => {
+  const gl = document.createElement('div');
+  gl.className = 'lgrp-label';
+  gl.textContent = g;
+  btnArea.appendChild(gl);
+
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:2px;';
+  btnArea.appendChild(row);
+
+  LINES.filter(l=>l.group===g).forEach(line => {
+    const hasApts = Object.values(APT_LINES).some(v => line.key in v);
+    const btn = document.createElement('button');
+    btn.className = 'lbtn' + (hasApts?'':' inactive');
+    btn.style.cssText = `color:${line.color};border-color:${line.color};`;
+    btn.innerHTML = `<span class="ldot" style="background:${line.color}"></span>${line.label}`;
+    if(hasApts){
+      btn.addEventListener('click', ()=>onLineClick(line.key, line.color, line.label, btn));
+    }
+    btnMap[line.key] = {btn, color:line.color};
+    row.appendChild(btn);
+  });
+});
+
+/* ── 클릭 핸들러 ── */
+function onLineClick(key, color, label, btn){
+  // 토글 off
+  if(activeKey === key){
+    btn.classList.remove('active');
+    btn.style.background = 'transparent';
+    btn.style.color = color;
+    document.getElementById('lineResult').style.display = 'none';
+    activeKey = null;
+    return;
+  }
+  // 이전 버튼 리셋
+  if(activeKey && btnMap[activeKey]){
+    const prev = btnMap[activeKey];
+    prev.btn.classList.remove('active');
+    prev.btn.style.background = 'transparent';
+    prev.btn.style.color = prev.color;
+  }
+  // 새 버튼 활성화
+  btn.classList.add('active');
+  btn.style.background = color;
+  btn.style.color = '#fff';
+  activeKey = key;
+
+  // 해당 노선 단지 수집 + 정렬
+  const matched = Object.entries(APT_LINES)
+    .filter(([,v]) => key in v)
+    .map(([id,v]) => {
+      const info = aptInfo(id);
+      return {id, station: v[key], total: info.total, tier: info.tier||'', avg: info.avgPrice||0};
+    })
+    .sort((a,b) => b.total - a.total);
+
+  // 헤더
+  const header = document.getElementById('lineResultHeader');
+  header.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};margin-right:6px;vertical-align:middle;"></span>`
+    + `<strong style="color:${color}">${label}</strong>`
+    + `<span style="color:var(--mu);margin-left:8px;">역세권 단지 ${matched.length}개 · 점수 높은 순</span>`;
+
+  // 카드 렌더
+  const cards = document.getElementById('lineResultCards');
+  const scoreColor = t => t>=85?'#F0C060':t>=75?'#40D090':t>=65?'#60A0FF':t>=55?'#9090C0':'#556080';
+  const tierCls = t => t.includes('4급지')?'tp4':t.includes('5급지')&&t.includes('18위')?'tp5a':t.includes('5급지')&&t.includes('20위')?'tp5b':t.includes('5급지')?'tp5b':'tp6';
+  const isNew = s => s.includes('예정')||s.includes('환승');
+
+  cards.innerHTML = matched.map(({id,station,total,tier,avg}) => `
+    <div class="lapt-card" style="border-left-color:${color}" onclick="scrollToCard('${id}')">
+      <div class="lapt-name">
+        <span>${id}</span>
+        <span class="lapt-score" style="color:${scoreColor(total)}">${total}</span>
+      </div>
+      <div class="lapt-station" style="color:${color}">
+        ${isNew(station)?'<span style="font-size:9px;background:rgba(255,160,64,.15);color:#FFA040;padding:1px 4px;border-radius:2px;margin-right:4px;">예정</span>':''}${station}
+      </div>
+      <div class="lapt-meta">
+        <span class="lapt-tier ${tierCls(tier)}">${tier}</span>
+        <span class="lapt-price">${avg?avg.toFixed(2)+'억':''}</span>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('lineResult').style.display = 'block';
+
+  // 섹션 스크롤
+  document.getElementById('lineResult').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+})();
+</script>
+
 <div class="cards-title" id="card-section">단지별 상세 카드 — 점수 높은 순 (커서 진입 후 휠로 좌우 스크롤)</div>
 <div class="card-outer" id="cardOuter">
   <button class="scroll-btn lft" onclick="scrollCards(-1)"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg></button>
@@ -277,7 +530,8 @@ table.ct{width:100%;border-collapse:collapse;}
   <table class="ct" style="min-width:680px;">
     <tr><th style="min-width:120px">항목 (배점)</th><th style="min-width:120px">최고점</th><th>중간점</th><th>최저점</th><th style="min-width:160px">이 분석 최고/최저</th></tr>
     <tr><td style="color:var(--c1);font-weight:600">급지 (18점)</td><td style="color:var(--green)">18pt: 13위 이내(4급지↑)</td><td>15pt: 18위(5급지상) / 12pt: 24위</td><td>8pt: 29위↓(6급지)</td><td>최고: 신길삼성·문래현대·상도대림 18pt / 최저: 온수 8pt</td></tr>
-    <tr><td style="color:var(--c7);font-weight:600">개발호재 (18점)</td><td style="color:var(--green)">18pt: 착공확정 다중호재</td><td>14pt: 공사중 복합 / 10pt: 공사중 단일</td><td>4~5pt: 간접수혜·없음</td><td>최고: 이문e편한세상 18pt / 최저: 온수 4pt</td></tr>
+    <tr><td style="color:var(--c7);font-weight:600">개발호재 (18점)</td><td style="color:var(--green)">18pt: 착공확정 다중호재</td><td>14pt: 공사중 복합 / 10pt: 공사중 단일</td><td>4~5pt: 간접수혜·없음</td><td>최고: 이문e편한세상 18pt / 최저: 온수·삼선 5pt</td></tr>
+    <tr><td style="color:#60DDD0;font-weight:600">GTX 수혜 (개발호재 내 반영)</td><td style="color:var(--green)">+3pt: 9호선→삼성 GTX-A·C(2026)</td><td>+2pt: 2호선→삼성 or 7호선→수서 / +1pt: 1호선→청량리(장기)</td><td>0pt: GTX 환승 불가</td><td>최고 수혜: 등촌마을서광·가양2단지 +3pt / 문래현대·상도대림 +2pt</td></tr>
     <tr><td style="color:var(--c8);font-weight:600">가격 (15점)</td><td style="color:var(--green)">15pt: 3개월평균 6억↓</td><td>13pt: 6.5억 / 12pt: 7억 / 11pt: 7.5억 / 10pt: 8억</td><td>6pt: 9억 / 4pt: 9.5억↑</td><td>최고: 래미안월곡·온수 12pt / 최저: 이문e편한세상·래미안크리시엘 6~8pt</td></tr>
     <tr><td style="color:var(--c3);font-weight:600">역세권 (13점)</td><td style="color:var(--green)">13pt: 도보5분↓ 더블</td><td>11pt: 단선5분 or 8분더블 / 9pt: 단선8분 / 7pt: 단선10분</td><td>4pt: 13분↑</td><td>최고: 이문e편한세상·온수 13pt / 최저: 꿈의숲 4pt</td></tr>
     <tr><td style="color:var(--c2);font-weight:600">세대수 (11점)</td><td style="color:var(--green)">11pt: 2,000세대↑</td><td>9pt: 1,200+ / 8pt: 800+ / 6pt: 600+ / 5pt: 500+</td><td>3pt: 500세대 미만</td><td>최고: 월곡두산위브 11pt / 최저: 신길삼성·문래현대 3pt</td></tr>
@@ -289,15 +543,248 @@ table.ct{width:100%;border-collapse:collapse;}
 </div>
 
 <div class="notice" style="margin-top:16px;">
-  <b>개발호재 최신 검증 결과</b><br>
+  <b>개발호재 최신 검증 결과 (GTX 반영)</b><br>
   · <span class="alrt">신안산선 개통 목표 정정</span>: 2025.04 광명 붕괴사고·2025.12 여의도 붕괴사고 → <b>2028년 12월로 재연기</b> (나무위키·SBS Biz 2025.12 보도). 신길삼성 호재 점수 하향 반영.<br>
   · <span class="fix">동북선</span>: <b>2027년 11월 준공·개통 목표 유지</b> (뉴스1 2026.03.12·기획재정부 2025.02 보도자료). 현재 공사 진행 중.<br>
   · <span class="fix">추가 단지</span>: 상도동 대림아파트(동작구 4급지, 7호선 상도역 역세권, 서부선 경전철 추진 호재) 신규 편입.<br>
   · 종암래미안세레니티 최근 3개월 평균 9.94억으로 사실상 10억 초과 → 가격 점수 최하점(3pt) 적용.<br>
+  · <b>GTX 수혜 반영</b>: 9호선→삼성(GTX-A·C 2026 하반기)+3pt | 2호선→삼성·7호선→수서+2pt | 1호선→청량리(2030 간접)+1pt<br>
   · <b>서울 전역 토지거래허가구역(~2026.12.31) · LTV 40% · 실거주 2년 의무.</b>
 </div>
 
+<!-- ===== 지도 섹션 ===== -->
+<div style="margin-top:28px;" id="mapSection">
+  <div class="section-lbl" style="margin-bottom:12px;">단지 위치 지도 — 마커 클릭 시 상세 정보</div>
+
+  <!-- 필터 버튼 -->
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+    <button class="map-fb on" onclick="mapFilter(this,'all')">전체</button>
+    <button class="map-fb" onclick="mapFilter(this,'4')">4급지 영등포·동작</button>
+    <button class="map-fb" onclick="mapFilter(this,'5a')">5급지 동대문</button>
+    <button class="map-fb" onclick="mapFilter(this,'5b')">5급지 성북·강서</button>
+    <button class="map-fb" onclick="mapFilter(this,'6')">6급지 구로</button>
+  </div>
+
+  <!-- 지도 컨테이너 -->
+  <div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--bd);">
+    <div id="kakaoMap" style="width:100%;height:520px;"></div>
+    <!-- 범례 -->
+    <div style="position:absolute;bottom:16px;right:16px;background:rgba(14,16,24,.92);border:1px solid #252A3A;border-radius:9px;padding:10px 13px;z-index:2;font-size:11px;">
+      <div style="font-size:10px;color:#566080;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">총점 기준</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#F0C060;flex-shrink:0"></div>85점↑</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#40D090;flex-shrink:0"></div>75~84점</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#60A0FF;flex-shrink:0"></div>65~74점</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#9090C0;flex-shrink:0"></div>55~64점</div>
+      <div style="display:flex;align-items:center;gap:6px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#556080;flex-shrink:0"></div>54점↓</div>
+    </div>
+  </div>
 </div>
+
+</div><!-- end .page -->
+
+<script>
+/* ===== 카카오맵 CSS ===== */
+(function(){
+  const s = document.createElement('style');
+  s.textContent = [
+    '.map-fb{font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #252A3A;background:#141720;color:#8090B8;cursor:pointer;transition:all .15s;font-family:"Noto Sans KR",sans-serif;}',
+    '.map-fb:hover{border-color:#8090B8;}',
+    '.map-fb.on{background:rgba(96,160,255,.14);color:#60A0FF;border-color:#60A0FF;}',
+    '.miw{background:#0E1018;border:1px solid #363C54;border-radius:10px;padding:12px 14px;width:230px;box-shadow:0 8px 28px rgba(0,0,0,.7);font-family:"Noto Sans KR",sans-serif;position:relative;}',
+    '.miw-name{font-size:14px;font-weight:700;color:#DDE2F0;margin-bottom:2px;}',
+    '.miw-sub{font-size:10px;color:#566080;margin-bottom:8px;}',
+    '.miw-sr{display:flex;align-items:center;gap:8px;margin-bottom:5px;}',
+    '.miw-score{font-size:22px;font-weight:900;font-family:"IBM Plex Mono",monospace;}',
+    '.miw-tr{font-size:11px;margin-left:auto;font-family:"IBM Plex Mono",monospace;}',
+    '.miw-price{font-size:11px;color:#8090B8;margin-bottom:8px;}',
+    '.miw-price b{color:#DDE2F0;font-family:"IBM Plex Mono";}',
+    '.miw-bars{display:grid;grid-template-columns:1fr 1fr;gap:3px 8px;margin-bottom:8px;}',
+    '.miw-bar{display:flex;align-items:center;gap:3px;}',
+    '.miw-bl{font-size:9px;color:#566080;width:30px;flex-shrink:0;}',
+    '.miw-track{flex:1;height:3px;background:#1C2030;border-radius:2px;overflow:hidden;}',
+    '.miw-fill{height:100%;border-radius:2px;}',
+    '.miw-bv{font-size:9px;font-weight:700;font-family:"IBM Plex Mono";width:14px;text-align:right;flex-shrink:0;}',
+    '.miw-tags{display:flex;flex-wrap:wrap;gap:3px;}',
+    '.miw-tag{font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(96,160,255,.1);color:#70B0FF;}',
+    '.miw-tag.g{background:rgba(64,208,144,.1);color:#50D090;}',
+    '.miw-tag.r{background:rgba(255,64,80,.1);color:#FF6070;}',
+    '.miw-tag.w{background:rgba(255,160,64,.1);color:#FFA040;}',
+    '.miw-close{position:absolute;top:7px;right:8px;background:rgba(255,255,255,.07);border:none;border-radius:50%;color:#8090B8;cursor:pointer;width:18px;height:18px;font-size:11px;display:flex;align-items:center;justify-content:center;}'
+  ].join('');
+  document.head.appendChild(s);
+})();
+
+/* ===== 지도 데이터 ===== */
+const _mapData = [
+  {id:"이문e편한세상",  area:"동대문구 이문동", lat:37.5917, lng:127.0587, fk:"5a",
+   급지:15,개발:18,가격:6,역세권:13,세대:11,주거:8,인프라:10,학군:4,
+   avg:9.31, trend:"보합", tags:["1·6호선 더블역세권","동북선 2027","이문뉴타운"]},
+  {id:"월곡두산위브",   area:"성북구 하월곡동", lat:37.6077, lng:127.0290, fk:"5b",
+   급지:12,개발:14,가격:11,역세권:11,세대:11,주거:8,인프라:10,학군:4,
+   avg:8.44, trend:"+9.2%", tags:["6호선 월곡역 5분","2,197세대","동북선"]},
+  {id:"이문현대",      area:"동대문구 이문동", lat:37.5895, lng:127.0565, fk:"5a",
+   급지:15,개발:15,가격:11,역세권:11,세대:6,주거:6,인프라:9,학군:4,
+   avg:8.12, trend:"+4.0%", tags:["1호선 신이문역 5분","복도식","이문뉴타운"]},
+  {id:"래미안월곡",    area:"성북구 하월곡동", lat:37.6082, lng:127.0270, fk:"5b",
+   급지:12,개발:12,가격:11,역세권:5,세대:9,주거:8,인프라:10,학군:4,
+   avg:8.77, trend:"+5.6%", tags:["동북선 신미아역 255m","4호선 12분(현재)","1,372세대 래미안"]},
+  {id:"신길삼성",      area:"영등포구 신길동", lat:37.5085, lng:126.9195, fk:"4",
+   급지:18,개발:13,가격:11,역세권:11,세대:3,주거:4,인프라:10,학군:4,
+   avg:8.42, trend:"+26.6%", tags:["7호선 신풍역 7분","4급지 최고","복도식★500미달"]},
+  {id:"래미안크리시엘",  area:"성북구 종암동",  lat:37.5932, lng:127.0315, fk:"5b",
+   급지:12,개발:12,가격:8,역세권:9,세대:9,주거:8,인프라:10,학군:5,
+   avg:9.09, trend:"+6.8%", tags:["동북선 종암경찰서역 수혜","6호선 고려대역 8분","학군 만점"]},
+  {id:"삼선푸르지오",   area:"성북구 삼선동",  lat:37.5855, lng:127.0135, fk:"5b",
+   급지:12,개발:5,가격:12,역세권:7,세대:8,주거:9,인프라:9,학군:5,
+   avg:9.10, trend:"+8.7%", tags:["4호선 한성대입구 10분","5.81억 최저","도심접근"]},
+  {id:"문래현대1차",   area:"영등포구 문래동", lat:37.5222, lng:126.8988, fk:"4",
+   급지:18,개발:14,가격:11,역세권:11,세대:3,주거:4,인프라:9,학군:3,
+   avg:8.34, trend:"+14.5%", tags:["2호선 도림천역 8분","복도식★500미달","통합리모델링"]},
+  {id:"온수힐스테이트",  area:"구로구 온수동",  lat:37.4912, lng:126.8523, fk:"6",
+   급지:8,개발:5,가격:12,역세권:13,세대:9,주거:10,인프라:8,학군:3,
+   avg:7.85, trend:"+1.0%", tags:["1·7호선 온수역 5분","999세대","6급지"]},
+  {id:"종암래미안세레니티",area:"성북구 종암동", lat:37.5892, lng:127.0297, fk:"5b",
+   급지:12,개발:12,가격:3,역세권:7,세대:9,주거:9,인프라:9,학군:5,
+   avg:9.94, trend:"+2.6%", tags:["동북선 종암경찰서역 수혜","⚠평균 9.94억","62건 최다"]},
+  {id:"꿈의숲푸르지오",  area:"성북구 하월곡동", lat:37.6142, lng:127.0265, fk:"5b",
+   급지:12,개발:12,가격:10,역세권:4,세대:7,주거:10,인프라:8,학군:4,
+   avg:8.47, trend:"+8.4%", tags:["동북선 신미아역 직접수혜","4호선 13분(현재)","꿈의숲"]},
+  {id:"상도동 대림",    area:"동작구 상도동",  lat:37.4978, lng:126.9438, fk:"4",
+   급지:18,개발:11,가격:12,역세권:9,세대:3,주거:5,인프라:8,학군:4,
+   avg:8.28, trend:"+12.7%", tags:["7호선 상도역 5~7분","4급지 동작","서부선 예정"]},
+  {id:"등촌마을서광",   area:"강서구 등촌동",  lat:37.5623, lng:126.8618, fk:"5b",
+   급지:12,개발:8,가격:8,역세권:7,세대:3,주거:7,인프라:8,학군:4,
+   avg:8.96, trend:"+9.1%", tags:["9호선 등촌역 약10분","마곡지구 인접","계단식"]},
+  {id:"가양2단지성지",  area:"강서구 가양동",  lat:37.5653, lng:126.8542, fk:"5b",
+   급지:12,개발:10,가격:6,역세권:9,세대:11,주거:4,인프라:7,학군:4,
+   avg:9.70, trend:"+16.2%", tags:["9호선 양천향교역 5~9분","1,624세대","복도식 구축"]}
+];
+_mapData.forEach(a => {
+  a.total = a.급지+a.개발+a.가격+a.역세권+a.세대+a.주거+a.인프라+a.학군;
+});
+_mapData.sort((a,b) => b.total - a.total);
+
+/* ===== 지도 초기화 ===== */
+let _map = null, _markers = [], _curOvl = null;
+
+function _markerColor(t){
+  if(t>=85) return {bg:"#F0C060",tx:"#08090D"};
+  if(t>=75) return {bg:"#40D090",tx:"#08090D"};
+  if(t>=65) return {bg:"#60A0FF",tx:"#08090D"};
+  if(t>=55) return {bg:"#9090C0",tx:"#ffffff"};
+  return       {bg:"#556080",tx:"#ffffff"};
+}
+
+function initMap(){
+  if(_map) return;
+  const c = document.getElementById('kakaoMap');
+  if(!c || !window.kakao) return;
+  _map = new kakao.maps.Map(c, {
+    center: new kakao.maps.LatLng(37.555, 126.965),
+    level: 7
+  });
+
+  _mapData.forEach((a, idx) => {
+    const rank = idx+1;
+    const col = _markerColor(a.total);
+    const svg = '<svg width="44" height="52" viewBox="0 0 44 52" xmlns="http://www.w3.org/2000/svg">'
+      +'<filter id="f'+idx+'"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="rgba(0,0,0,.55)"/></filter>'
+      +'<path d="M22 2C12.6 2 5 9.6 5 19c0 12 17 31 17 31s17-19 17-31C39 9.6 31.4 2 22 2z" fill="'+col.bg+'" filter="url(#f'+idx+')"/>'
+      +'<text x="22" y="22" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-weight="700" font-size="11" fill="'+col.tx+'">'+a.total+'</text>'
+      +'<text x="22" y="33" text-anchor="middle" font-family="Noto Sans KR,sans-serif" font-size="8" fill="'+col.tx+'">'+rank+'위</text>'
+      +'</svg>';
+    const img = new kakao.maps.MarkerImage(
+      'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg),
+      new kakao.maps.Size(44,52),
+      {offset: new kakao.maps.Point(22,52)}
+    );
+    const marker = new kakao.maps.Marker({
+      position: new kakao.maps.LatLng(a.lat, a.lng),
+      map: _map, image: img, title: a.id
+    });
+
+    const bCfg = [
+      ["급지",a.급지,18,"#FF7070"],["개발",a.개발,18,"#FF8098"],
+      ["가격",a.가격,15,"#60DDD0"],["역세권",a.역세권,13,"#60A0FF"],
+      ["세대",a.세대,11,"#FFA040"],["주거",a.주거,10,"#50D0A0"],
+      ["인프라",a.인프라,10,"#B070FF"],["학군",a.학군,5,"#FFD060"]
+    ];
+    const bHtml = bCfg.map(([l,v,mx,c])=>
+      '<div class="miw-bar"><div class="miw-bl">'+l+'</div>'
+      +'<div class="miw-track"><div class="miw-fill" style="width:'+Math.round(v/mx*100)+'%;background:'+c+'"></div></div>'
+      +'<div class="miw-bv" style="color:'+c+'">'+v+'</div></div>'
+    ).join('');
+    const tHtml = a.tags.map(t=>{
+      const tc = (t.includes('★')||t.includes('⚠'))?'r':(t.includes('복도식')?'w':'g');
+      return '<span class="miw-tag '+tc+'">'+t+'</span>';
+    }).join('');
+    const tc = a.trend.startsWith('+')?'#40D090':'#8090B8';
+
+    const iw = new kakao.maps.CustomOverlay({
+      content: '<div class="miw">'
+        +'<button class="miw-close" onclick="(function(){var o=window._curOvl;if(o)o.setMap(null);window._curOvl=null;})()">✕</button>'
+        +'<div class="miw-name">'+a.id+'</div>'
+        +'<div class="miw-sub">'+a.area+' · '+rank+'위/14개 단지</div>'
+        +'<div class="miw-sr"><span class="miw-score" style="color:'+col.bg+'">'+a.total+'</span>'
+        +'<span style="font-size:11px;color:#8090B8">총점</span>'
+        +'<span class="miw-tr" style="color:'+tc+'">'+a.trend+'</span></div>'
+        +'<div class="miw-price">3개월 평균 <b>'+a.avg+'억</b></div>'
+        +'<div class="miw-bars">'+bHtml+'</div>'
+        +'<div class="miw-tags">'+tHtml+'</div>'
+        +'</div>',
+      position: new kakao.maps.LatLng(a.lat, a.lng),
+      yAnchor: 1.18, zIndex: 3
+    });
+
+    kakao.maps.event.addListener(marker, 'click', function(){
+      if(_curOvl) _curOvl.setMap(null);
+      iw.setMap(_map);
+      _curOvl = iw;
+      _map.panTo(new kakao.maps.LatLng(a.lat, a.lng));
+    });
+
+    _markers.push({marker, iw, fk: a.fk});
+  });
+
+  kakao.maps.event.addListener(_map, 'click', function(){
+    if(_curOvl){ _curOvl.setMap(null); _curOvl=null; }
+  });
+}
+
+function mapFilter(btn, key){
+  document.querySelectorAll('.map-fb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(!_map) return;
+  if(_curOvl){ _curOvl.setMap(null); _curOvl=null; }
+  _markers.forEach(m => {
+    m.marker.setMap((key==='all'||m.fk===key) ? _map : null);
+  });
+  if(key !== 'all'){
+    const pts = _mapData.filter(a => a.fk===key);
+    if(pts.length){
+      const bounds = new kakao.maps.LatLngBounds();
+      pts.forEach(a => bounds.extend(new kakao.maps.LatLng(a.lat, a.lng)));
+      _map.setBounds(bounds, 80);
+    }
+  } else {
+    _map.setCenter(new kakao.maps.LatLng(37.555, 126.965));
+    _map.setLevel(7);
+  }
+}
+
+/* 카카오 SDK 로드 완료 후 지도 초기화 */
+if(window.kakao && window.kakao.maps){
+  initMap();
+} else {
+  window.addEventListener('load', function(){
+    var t = setInterval(function(){
+      if(window.kakao && window.kakao.maps){ clearInterval(t); initMap(); }
+    }, 100);
+    setTimeout(function(){ clearInterval(t); }, 10000);
+  });
+}
+
+</script>
 
 <script>
 const apts = [
@@ -312,7 +799,7 @@ const apts = [
    cons:["3개월 평균 9.31억 → 10억 목전","2003년 구축·지하주차 동간 미연결","강남 직결 없음(1호선)"]},
 
   {id:"월곡두산위브",  area:"성북구 하월곡동", year:2003, units:2197, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
-   급지:12, 개발호재:14, 가격:11, 역세권:11, 세대수:11, 주거:8, 인프라:10, 학군:4,
+   급지:12, 개발호재:14, 가격:11, 역세권:13, 세대수:11, 주거:8, 인프라:10, 학군:4,
    avgPrice:8.44, trend:"+9.2%",
    역세권text:"6호선 월곡역 5분",
    horae:{t:"동북선 2027.11 공사중 → 왕십리 환승", g:"B"},
@@ -322,44 +809,44 @@ const apts = [
    cons:["성북구 24위(동대문·영등포보다 하위)","6호선 단일노선(강남 직결 없음)","동북선 2027 전까지 호재 대기"]},
 
   {id:"이문현대",     area:"동대문구 이문동", year:2000, units:601, tier:"5급지 18위", tcls:"tp5a", str:"str5a",
-   급지:15, 개발호재:14, 가격:11, 역세권:11, 세대수:6, 주거:6, 인프라:9, 학군:4,
+   급지:15, 개발호재:15, 가격:11, 역세권:11, 세대수:6, 주거:6, 인프라:9, 학군:4,
    avgPrice:8.12, trend:"+4.0%",
    역세권text:"1호선 신이문역 5분",
-   horae:{t:"동북선 2027.11 공사중 + 이문뉴타운 + 동부간선 지하화", g:"B"},
+   horae:{t:"동북선 2027.11 공사중 + 이문뉴타운 + 동부간선 지하화 + 1호선→청량리(GTX-B·C 간접)", g:"B"},
    tags:["1호선 신이문역 5분","5급지 18위 동대문구","이문뉴타운·동북선","7.08억 최저 진입","복도식"],
    tagcls:["tbl","tgn","tpu","tgd","twn"],
    pros:["이문e편한세상 대비 ~1억 저렴","동대문구 18위 동일 급지·생활권","7.08억 저층 실거래 확인"],
    cons:["9건 거래 — 유동성 최저","복도식 구조","601세대 소형"]},
 
   {id:"래미안월곡",   area:"성북구 하월곡동", year:2006, units:1372, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
-   급지:12, 개발호재:8, 가격:11, 역세권:9, 세대수:9, 주거:8, 인프라:10, 학군:4,
+   급지:12, 개발호재:12, 가격:11, 역세권:5, 세대수:9, 주거:8, 인프라:10, 학군:4,
    avgPrice:8.77, trend:"+5.6%",
-   역세권text:"6호선 월곡역 8분",
-   horae:{t:"동북선 2027.11 공사중 간접수혜(월곡역→6호선 환승)", g:"C"},
-   tags:["6호선 월곡역 8분","1,372세대 래미안","6.0억 저층 진입","지하주차 연결","동북선 간접수혜","계단식"],
-   tagcls:["tbl","tgn","tgd","tgd","tpu","tgn"],
-   pros:["저층 6.0억 → 예산 여유","1,372세대 래미안 대단지","지하주차 연결·주차 여유","꾸준한 우상향 +5.6%"],
-   cons:["3개월 평균 8.77억으로 상승 중","월곡역 도보 고가도로 우회","동북선 외 호재 제한"]},
+   역세권text:"4호선 미아사거리역 약 12분",
+   horae:{t:"동북선 신미아역 단지 바로 앞 255m(1분 거리) — 2027.11 개통 목표. 가장 직접적인 동북선 수혜단지", g:"A"},
+   tags:["4호선 미아사거리역 약 12분","동북선 신미아역 255m 앞","1,372세대 래미안","6.0억 저층 진입","지하주차 연결","계단식"],
+   tagcls:["tbl","tgd","tgn","tgd","tgd","tgn"],
+   pros:["동북선 신미아역이 단지 255m 앞 — 분석 단지 중 동북선 최근접","1,372세대 래미안 대단지·지하주차 연결","저층 6.0억 → 예산 여유","꾸준한 우상향 +5.6%"],
+   cons:["현재 역세권 취약 — 4호선 12분(월곡역 6호선은 실제 더 멀어 오류 정정)","동북선 개통 전(2027)까지는 교통 불편","3개월 평균 8.77억으로 상승 중"]},
 
   {id:"신길삼성",     area:"영등포구 신길동", year:1984, units:384, tier:"4급지 13위", tcls:"tp4", str:"str4",
-   급지:18, 개발호재:12, 가격:11, 역세권:11, 세대수:3, 주거:4, 인프라:10, 학군:4,
+   급지:18, 개발호재:13, 가격:11, 역세권:11, 세대수:3, 주거:4, 인프라:10, 학군:4,
    avgPrice:8.42, trend:"+26.6%",
    역세권text:"7호선 신풍역 7분+신림선 보라매공원역 10분",
-   horae:{t:"신안산선 2028년↑ 연기(붕괴사고), 재건축 조합 난항", g:"B"},
+   horae:{t:"신안산선 2028년↑ 연기(붕괴사고) + 재건축 조합 진행중. 신안산선→GTX-A 서울역·수서 환승 가능(장기)", g:"B"},
    tags:["7호선 신풍역 7분","신림선 더블역세권","4급지 영등포 최고","신안산선 2028년↑ 재연기","재건축 조합 진행중","★500세대 미달","복도식"],
    tagcls:["tbl","tbl","tgn","twn","twn","trd","twn"],
    pros:["영등포 4급지 — 분석 최상위 급지","전년比 +26.6% — 분석 최고 상승률","신안산선 개통 후 여의도 3정거장","재건축 완공 후 569세대"],
    cons:["신안산선 2028년 이후 재연기(붕괴 2회)","384세대 — 500 미달 최하점","1984년 구축·주차 0.57대","재건축 조합 운영 난항"]},
 
   {id:"래미안크리시엘", area:"성북구 종암동", year:2003, units:1168, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
-   급지:12, 개발호재:10, 가격:8, 역세권:9, 세대수:9, 주거:8, 인프라:10, 학군:5,
+   급지:12, 개발호재:12, 가격:8, 역세권:9, 세대수:9, 주거:8, 인프라:10, 학군:5,
    avgPrice:9.09, trend:"+6.8%",
    역세권text:"6호선 고려대역 8분",
-   horae:{t:"동북선 고려대역 2027.11 직접수혜", g:"B"},
-   tags:["6호선 고려대역 8분","1,168세대 래미안","학군 최고(5/5)","고려대·사대부중고 도보","동북선 직접수혜","계단식"],
-   tagcls:["tbl","tgn","tgd","tgd","tpu","tgn"],
-   pros:["학군 만점 — 고려대·사대부중고","1,168세대 래미안 브랜드","꾸준한 우상향 +6.8%"],
-   cons:["3개월 평균 9.09억 → 10억 근접","동북선 외 뚜렷한 호재 부족","26건 유동성 낮음"]},
+   horae:{t:"동북선 106역 종암경찰서역 직접수혜 (문서 명시)", g:"B"},
+   tags:["6호선 고려대역 8분","동북선 종암경찰서역 직접수혜","1,168세대 래미안","학군 최고(5/5)","계단식"],
+   tagcls:["tbl","tgd","tgn","tgd","tgn"],
+   pros:["학군 만점 — 고려대·사대부중고 도보","동북선 106역 종암경찰서역 직접수혜(문서 명시)","1,168세대 래미안 브랜드"],
+   cons:["3개월 평균 9.09억 → 10억 근접","26건 거래 유동성 낮음"]},
 
   {id:"삼선푸르지오",  area:"성북구 삼선동2가", year:2008, units:864, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
    급지:12, 개발호재:5, 가격:12, 역세권:7, 세대수:8, 주거:9, 인프라:9, 학군:5,
@@ -372,55 +859,77 @@ const apts = [
    cons:["역세권 취약(10분 단일노선)","26Q1 9.67억 급등 → 10억 목전","분기별 가격 등락 폭 최대"]},
 
   {id:"문래현대1차",  area:"영등포구 문래동6가", year:1986, units:264, tier:"4급지 13위", tcls:"tp4", str:"str4",
-   급지:18, 개발호재:12, 가격:11, 역세권:11, 세대수:3, 주거:4, 인프라:9, 학군:3,
+   급지:18, 개발호재:14, 가격:11, 역세권:11, 세대수:3, 주거:4, 인프라:9, 학군:3,
    avgPrice:8.34, trend:"+14.5%",
    역세권text:"2호선 도림천역 8분+5호선 양평역 11분",
-   horae:{t:"7개단지 통합리모델링 추진 + 문래동4가 재개발", g:"B"},
+   horae:{t:"7개단지 통합리모델링 추진 + 문래동4가 재개발 + 2호선→삼성(GTX-A·C 2026+ 환승)", g:"A"},
    tags:["2호선 도림천역 8분","5호선 양평역 11분","4급지 영등포 최고","통합리모델링 1,973세대","문래4가 재개발","★500세대 미달","복도식"],
    tagcls:["tbl","tbl","tgn","tgd","tgd","trd","twn"],
    pros:["영등포 4급지 최상위 급지","7개단지 통합리모델링→2,000세대 기대","문래동4가 재개발+목동학원가 인접","+14.5% 상승"],
    cons:["264세대 — 500미달 최하점","1986년 구축·준공업지역 인접","리모델링 인허가 수년 소요"]},
 
   {id:"온수힐스테이트", area:"구로구 온수동", year:2010, units:999, tier:"6급지 29위", tcls:"tp6", str:"str6",
-   급지:8, 개발호재:4, 가격:12, 역세권:13, 세대수:9, 주거:10, 인프라:8, 학군:3,
+   급지:8, 개발호재:5, 가격:12, 역세권:13, 세대수:9, 주거:10, 인프라:8, 학군:3,
    avgPrice:7.85, trend:"+1.0%",
    역세권text:"1호선+7호선 온수역 5분",
-   horae:{t:"뚜렷한 개발호재 없음", g:"D"},
-   tags:["1호선+7호선 온수역 5분","더블역세권","999세대 2010년 힐스테이트","6급지 최하","개발호재 없음","계단식"],
-   tagcls:["tbl","tgn","tgn","tgr","tgr","tgn"],
+   horae:{t:"7호선→수서(GTX-A 2024 개통, 이용가능) 환승 가능. 수서까지 약 20정거장", g:"D+"},
+   tags:["1호선+7호선 온수역 5분","더블역세권","999세대 2010년 힐스테이트","7호선→수서 GTX-A 환승","6급지 최하","계단식"],
+   tagcls:["tbl","tgn","tgn","tgd","tgr","tgn"],
    pros:["1·7호선 더블역세권 5분 — 역세권 최고","2010년 준신축+힐스테이트+지하주차","7.85억 평균 — 예산 여유"],
    cons:["6급지 29위 — 분석 최하 급지","+1.0% 사실상 보합","개발호재 없음"]},
 
-  {id:"종암래미안세레니티",area:"성북구 종암동", year:2009, units:500, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
-   급지:12, 개발호재:5, 가격:3, 역세권:7, 세대수:5, 주거:9, 인프라:9, 학군:5,
+  {id:"종암래미안세레니티",area:"성북구 종암동", year:2009, units:955, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
+   급지:12, 개발호재:12, 가격:3, 역세권:7, 세대수:9, 주거:9, 인프라:9, 학군:5,
    avgPrice:9.94, trend:"+2.6%",
    역세권text:"6호선 고려대역 10분",
-   horae:{t:"동북선 고려대역 간접수혜", g:"D+"},
-   tags:["6호선 고려대역 10분","62건 최다 거래","2009년 래미안","3개월 평균 9.94억","10억 초과 주의","계단식"],
-   tagcls:["tbl","tgn","tgd","twn","trd","tgn"],
-   pros:["62건 거래 — 유동성 압도적 1위","2009년 래미안 계단식","저층 실거래 일부 6억대"],
-   cons:["3개월 평균 9.94억 → 사실상 10억 초과","가격 점수 최하(3pt)","역세권·호재 모두 취약"]},
+   horae:{t:"동북선 106역 종암경찰서역 직접수혜 (문서 명시). 세대수 955세대 정정", g:"B"},
+   tags:["6호선 고려대역 10분","동북선 종암경찰서역 직접수혜","955세대 2009년 래미안","62건 최다 거래","⚠3개월평균 9.94억"],
+   tagcls:["tbl","tgd","tgn","tgn","trd"],
+   pros:["동북선 106역 종암경찰서역 직접수혜(문서 명시)","62건 거래 — 유동성 압도적 1위","955세대 정정(기존 500세대 오류)"],
+   cons:["3개월 평균 9.94억 → 사실상 10억 초과 → 가격 최하점","가격 문제가 가장 큰 약점"]},
 
   {id:"꿈의숲푸르지오", area:"성북구 하월곡동", year:2010, units:714, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
-   급지:12, 개발호재:5, 가격:10, 역세권:4, 세대수:7, 주거:10, 인프라:8, 학군:4,
+   급지:12, 개발호재:12, 가격:10, 역세권:4, 세대수:7, 주거:10, 인프라:8, 학군:4,
    avgPrice:8.47, trend:"+8.4%",
    역세권text:"4호선 미아사거리역 13분",
-   horae:{t:"동북선 미아사거리역 간접수혜", g:"D+"},
-   tags:["4호선 미아사거리역 13분","714세대 2010년","꿈의숲 공원 인접","역세권 최하","최저 8.1억","계단식"],
-   tagcls:["trd","tgn","tgn","twn","twn","tgn"],
-   pros:["2010년 준신축·커뮤니티·지하주차","꿈의숲 대형공원 인접","+8.4% 상승 가속"],
-   cons:["역세권 최하(13분 단일)","9건 거래 유동성 최저","최저가 8.1억→10억 내 여유 없음"]},
+   horae:{t:"동북선 108역 신미아역 직접수혜 — 래미안월곡과 동일 역세권(문서 명시)", g:"B"},
+   tags:["4호선 미아사거리역 13분","동북선 신미아역 직접수혜","714세대 2010년","꿈의숲 공원 인접","계단식"],
+   tagcls:["trd","tgd","tgn","tgn","tgn"],
+   pros:["동북선 108역 신미아역 직접수혜(래미안월곡과 동일권역)","2010년 준신축·커뮤니티·지하주차","꿈의숲 대형공원 인접"],
+   cons:["현재 역세권 최하(13분) — 동북선 개통 전까지 불편","9건 거래 유동성 최저","최저가 8.1억→10억 내 여유 없음"]},
 
   {id:"상도동 대림",   area:"동작구 상도동", year:1995, units:300, tier:"4급지 10위", tcls:"tp4", str:"str4",
    isNew:true,
-   급지:18, 개발호재:9, 가격:12, 역세권:9, 세대수:3, 주거:5, 인프라:8, 학군:4,
+   급지:18, 개발호재:11, 가격:12, 역세권:9, 세대수:3, 주거:5, 인프라:8, 학군:4,
    avgPrice:8.28, trend:"+12.7%",
    역세권text:"7호선 상도역 도보 5~7분",
-   horae:{t:"상도14·15구역 재개발(4,395세대 공급예정) + 서부선 경전철 추진(신상도역 예정)", g:"B"},
+   horae:{t:"상도14·15구역 재개발(4,395세대) + 서부선 경전철 추진 + 7호선→수서(GTX-A 2024 개통) 환승", g:"B"},
    tags:["7호선 상도역 5~7분","4급지 동작구 10위","상도14·15구역 재개발","서부선 경전철 추진","★300세대 추정 소단지","복도식 추정"],
    tagcls:["tbl","tgn","tgd","tpu","trd","twn"],
    pros:["동작구 4급지 10위 — 영등포(13위)보다 상위","상도14·15구역 재개발→4,395세대 낙수효과","서부선 경전철 신상도역 예정","7호선 강남(논현·학동) 직결","노량진 학원가 도보권"],
-   cons:["~300세대 소단지(세대수 최하점)","1995년 구축(30년)","재개발 낙수는 간접수혜 수준","서부선 개통 일정 불확실"]}
+   cons:["~300세대 소단지(세대수 최하점)","1995년 구축(30년)","재개발 낙수는 간접수혜 수준","서부선 개통 일정 불확실"]},
+
+  {id:"등촌마을서광",   area:"강서구 등촌동", year:1999, units:430, tier:"5급지 20위", tcls:"tp5b", str:"str5b",
+   isNew:true,
+   급지:12, 개발호재:8, 가격:8, 역세권:7, 세대수:3, 주거:7, 인프라:8, 학군:4,
+   avgPrice:8.96, trend:"+9.1%",
+   역세권text:"9호선 등촌역 도보 약 10분",
+   horae:{t:"9호선→삼성(GTX-A·C 2026 하반기 예정) 급행 약 15분. 9호선 라인 GTX 수혜 최대 단지", g:"B"},
+   tags:["9호선 등촌역 약 10분","9호선→삼성 GTX-A·C 환승","마곡지구 인접","430세대★500미만","1999년 계단식"],
+   tagcls:["tbl","tgd","tgd","trd","tgn"],
+   pros:["1999년 계단식·지하주차","마곡지구·LG사이언스파크 생활권","9호선으로 여의도·강남 접근","+9.1% 상승 추세"],
+   cons:["430세대 — 500세대 미달 최하점","9호선 등촌역 약 10분(일반역, 급행 아님)","직접 개발호재 없음","30평대 평균 8.96억 → 10억 여유 적음"]},
+
+  {id:"가양2단지성지",  area:"강서구 가양동", year:1992, units:1624, tier:"5급지 20위", tcls:"tp5b", str:"str5b",
+   isNew:true,
+   급지:12, 개발호재:10, 가격:6, 역세권:9, 세대수:11, 주거:4, 인프라:7, 학군:4,
+   avgPrice:9.70, trend:"+16.2%",
+   역세권text:"9호선 양천향교역 도보 5~9분",
+   horae:{t:"9호선→삼성(GTX-A·C 2026 하반기 예정) 급행 약 18분 + 인근 3·6단지 재건축 추진", g:"B"},
+   tags:["9호선 양천향교역 5~9분","9호선→삼성 GTX-A·C 환승","1,624세대 대단지","인근 3·6단지 재건축","⚠30평대 실거래 추정치"],
+   tagcls:["tbl","tgd","tgn","tpu","trd"],
+   pros:["1,624세대 대단지 — 세대수 만점","인근 가양3·6단지 재건축 추진→생활권 개선 기대","부동산뱅크 기준 1년간 +16.2%","9호선 양천향교역 도보권"],
+   cons:["30평대 실거래 데이터 없음(평당 환산 약 9.7억 추정, 직접 확인 필수)","1992년 복도식 구축·주차 0.54대/세대 부족","2단지 재건축은 아직 초기(직접 해당 아님)","강서구 서쪽 끝 입지(강남 접근 원거리)"]}
 ];
 
 // 총점 계산
@@ -571,7 +1080,7 @@ function scrollCards(dir) {
   document.getElementById("cardScroll").scrollBy({left: dir*372, behavior:"smooth"});
 }
 
-// 휠 → 좌우 스크롤 (카드 섹션 안에 커서가 있을 때)
+// 휠 → 좌우 스크롤
 (function(){
   const outer = document.getElementById("cardOuter");
   const scroll = document.getElementById("cardScroll");
@@ -580,7 +1089,6 @@ function scrollCards(dir) {
   outer.addEventListener("mouseleave", () => inside=false);
   window.addEventListener("wheel", (e) => {
     if(!inside) return;
-    // 수직 스크롤을 가로 스크롤로 변환
     e.preventDefault();
     scroll.scrollBy({left: e.deltaY * 1.5, behavior:"smooth"});
   }, {passive:false});
