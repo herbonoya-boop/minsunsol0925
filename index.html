@@ -245,6 +245,7 @@ table.ct{width:100%;border-collapse:collapse;}
   <table class="rt" id="rankTable">
     <thead><tr>
       <th style="width:30px">#</th>
+      <th style="width:30px" title="비교할 단지 선택 (최대 3개)">비교</th>
       <th class="tl" style="min-width:170px">단지명</th>
       <th style="min-width:78px">급지</th>
       <th class="s" data-k="급지">급지<br><small>/18</small></th>
@@ -321,199 +322,165 @@ table.ct{width:100%;border-collapse:collapse;}
 
 /* ── 노선 정의 ── */
 const LINES = [
-  /* group: 현재 */
-  {key:"L1",  label:"1호선",        color:"#0052A4", group:"현재 운행 노선"},
-  {key:"L2",  label:"2호선",        color:"#00A84D", group:"현재 운행 노선"},
-  {key:"L3",  label:"3호선",        color:"#EF7C1C", group:"현재 운행 노선"},
-  {key:"L4",  label:"4호선",        color:"#00A5DE", group:"현재 운행 노선"},
-  {key:"L5",  label:"5호선",        color:"#996CAC", group:"현재 운행 노선"},
-  {key:"L6",  label:"6호선",        color:"#CD7C2F", group:"현재 운행 노선"},
-  {key:"L7",  label:"7호선",        color:"#747F00", group:"현재 운행 노선"},
-  {key:"L8",  label:"8호선",        color:"#E6186C", group:"현재 운행 노선"},
-  {key:"L9",  label:"9호선",        color:"#BDB092", group:"현재 운행 노선"},
-  {key:"UI",  label:"우이신설선",    color:"#B7C452", group:"현재 운행 노선"},
-  {key:"SIN", label:"신림선",        color:"#6789CA", group:"현재 운행 노선"},
-  {key:"SB",  label:"수인·분당선",  color:"#F5A200", group:"현재 운행 노선"},
-  {key:"GYG", label:"경의·중앙선",  color:"#77C4A3", group:"현재 운행 노선"},
-  {key:"AIR", label:"공항철도",      color:"#0090D2", group:"현재 운행 노선"},
-  /* group: 예정 */
-  {key:"DNB", label:"동북선",        color:"#E31E24", group:"개통 예정 노선"},
-  {key:"SINA",label:"신안산선",      color:"#0070BB", group:"개통 예정 노선"},
-  /* group: GTX */
-  {key:"GTXA",label:"GTX-A",         color:"#FF6600", group:"GTX"},
-  {key:"GTXB",label:"GTX-B",         color:"#0080FF", group:"GTX"},
-  {key:"GTXC",label:"GTX-C",         color:"#00A050", group:"GTX"},
+  {key:"L1", label:"1호선",        color:"#0052A4", group:"현재 운행"},
+  {key:"L2", label:"2호선",        color:"#00A84D", group:"현재 운행"},
+  {key:"L3", label:"3호선",        color:"#EF7C1C", group:"현재 운행"},
+  {key:"L4", label:"4호선",        color:"#00A5DE", group:"현재 운행"},
+  {key:"L5", label:"5호선",        color:"#996CAC", group:"현재 운행"},
+  {key:"L6", label:"6호선",        color:"#CD7C2F", group:"현재 운행"},
+  {key:"L7", label:"7호선",        color:"#747F00", group:"현재 운행"},
+  {key:"L8", label:"8호선",        color:"#E6186C", group:"현재 운행"},
+  {key:"L9", label:"9호선",        color:"#BDB092", group:"현재 운행"},
+  {key:"UI", label:"우이신설",      color:"#B7C452", group:"현재 운행"},
+  {key:"SIN",label:"신림선",        color:"#6789CA", group:"현재 운행"},
+  {key:"SB", label:"수인·분당",    color:"#F5A200", group:"현재 운행"},
+  {key:"GYG",label:"경의·중앙",    color:"#77C4A3", group:"현재 운행"},
+  {key:"AIR",label:"공항철도",      color:"#0090D2", group:"현재 운행"},
+  {key:"DNB",label:"동북선",        color:"#E31E24", group:"개통 예정"},
+  {key:"SINA",label:"신안산선",     color:"#0070BB", group:"개통 예정"},
+  {key:"GTXA",label:"GTX-A",        color:"#FF6600", group:"GTX"},
+  {key:"GTXB",label:"GTX-B",        color:"#0080FF", group:"GTX"},
+  {key:"GTXC",label:"GTX-C",        color:"#00A050", group:"GTX"},
 ];
 
 /* ── 단지별 노선·역 매핑 ── */
 const APT_LINES = {
-  "이문e편한세상": {
-    L1:"신이문역 도보 3분",
-    L6:"돌곶이역 도보 5분",
-    DNB:"동북선 개통 예정 2027(수혜 간접)"
-  },
-  "이문현대": {
-    L1:"신이문역 도보 5분",
-    DNB:"동북선 수혜(이문 생활권 2027)"
-  },
-  "월곡두산위브": {
-    L6:"월곡역 도보 5분",
-    DNB:"동북선 환승 경유 수혜"
-  },
-  "래미안월곡": {
-    L4:"미아사거리역 약 12분",
-    DNB:"신미아역 직접수혜 255m(2027)"
-  },
-  "꿈의숲푸르지오": {
-    L4:"미아사거리역 13분",
-    DNB:"신미아역 직접수혜(2027)"
-  },
-  "래미안크리시엘": {
-    L6:"고려대역 도보 8분",
-    DNB:"종암경찰서역 직접수혜(2027)"
-  },
-  "종암래미안세레니티": {
-    L6:"고려대역 도보 10분",
-    DNB:"종암경찰서역 직접수혜(2027)"
-  },
-  "삼선푸르지오": {
-    L4:"한성대입구역 도보 10분"
-  },
-  "신길삼성": {
-    L7:"신풍역 도보 7분",
-    SIN:"보라매공원역 도보 10분",
-    SINA:"신풍역(신안산선 2028+ 예정)"
-  },
-  "문래현대1차": {
-    L2:"도림천역 도보 8분",
-    L5:"양평역 도보 11분",
-    GTXA:"2호선→삼성 환승(GTX-A 2026 하반기)",
-    GTXC:"2호선→삼성 환승(GTX-C 2028+)"
-  },
-  "온수힐스테이트": {
-    L1:"온수역 도보 5분",
-    L7:"온수역 도보 5분",
-    GTXA:"7호선→수서 환승(GTX-A 현재 이용가능)"
-  },
-  "상도동 대림": {
-    L7:"상도역 도보 5~7분",
-    GTXA:"7호선→수서 환승(GTX-A 현재 이용가능)"
-  },
-  "등촌마을서광": {
-    L9:"등촌역 도보 약 10분",
-    GTXA:"9호선→삼성 환승(GTX-A 2026 하반기)",
-    GTXC:"9호선→삼성 환승(GTX-C 2028+)"
-  },
-  "가양2단지성지": {
-    L9:"양천향교역 도보 5~9분",
-    GTXA:"9호선→삼성 환승(GTX-A 2026 하반기)",
-    GTXC:"9호선→삼성 환승(GTX-C 2028+)"
-  },
+  "이문e편한세상": {L1:"신이문역 도보 3분", L6:"돌곶이역 도보 5분", DNB:"동북선 수혜(2027)"},
+  "이문현대":      {L1:"신이문역 도보 5분", DNB:"동북선 수혜(2027)"},
+  "월곡두산위브":  {L6:"월곡역 도보 5분",   DNB:"동북선 환승 경유"},
+  "래미안월곡":    {L4:"미아사거리역 약 12분", DNB:"신미아역 직접수혜 255m(2027)"},
+  "꿈의숲푸르지오":{L4:"미아사거리역 13분",  DNB:"신미아역 직접수혜(2027)"},
+  "래미안크리시엘":{L6:"고려대역 도보 8분",  DNB:"종암경찰서역 직접수혜(2027)"},
+  "종암래미안세레니티":{L6:"고려대역 도보 10분", DNB:"종암경찰서역 직접수혜(2027)"},
+  "삼선푸르지오":  {L4:"한성대입구역 도보 10분"},
+  "신길삼성":      {L7:"신풍역 도보 7분", SIN:"보라매공원역 10분", SINA:"신풍역(2028+ 예정)"},
+  "문래현대1차":   {L2:"도림천역 도보 8분", L5:"양평역 도보 11분", GTXA:"2호선→삼성(GTX-A 2026)", GTXC:"2호선→삼성(GTX-C 2028+)"},
+  "온수힐스테이트":{L1:"온수역 도보 5분", L7:"온수역 도보 5분", GTXA:"7호선→수서(GTX-A 현재)"},
+  "상도동 대림":   {L7:"상도역 도보 5~7분", GTXA:"7호선→수서(GTX-A 현재)"},
+  "등촌마을서광":  {L9:"등촌역 도보 약 10분", GTXA:"9호선→삼성(GTX-A 2026 하반기)", GTXC:"9호선→삼성(GTX-C 2028+)"},
+  "가양2단지성지": {L9:"양천향교역 도보 5~9분", GTXA:"9호선→삼성(GTX-A 2026 하반기)", GTXC:"9호선→삼성(GTX-C 2028+)"},
 };
 
-/* ── 단지 총점 가져오기 ── */
+/* ── 상태 ── */
+const activeKeys = new Set(); // 중복선택 지원
+const btnMap = {};
+
+/* ── 헬퍼 ── */
 function aptInfo(id){
   if(typeof apts==='undefined') return {total:0,tier:'',avgPrice:0};
   return apts.find(a=>a.id===id)||{total:0,tier:'',avgPrice:0};
 }
+function scoreColor(t){return t>=85?'#F0C060':t>=75?'#40D090':t>=65?'#60A0FF':t>=55?'#9090C0':'#556080';}
+function tierCls(t){return t.includes('4급지')?'tp4':t.includes('18위')?'tp5a':t.includes('20위')?'tp5b':t.includes('24위')?'tp5b':'tp6';}
+function isPlanned(s){return s.includes('예정')||s.includes('환승');}
 
-/* ── 버튼 그룹 렌더 ── */
+/* ── 버튼 렌더 ── */
 const btnArea = document.getElementById('lineBtnArea');
 const groups = [...new Set(LINES.map(l=>l.group))];
-let activeKey = null;
-const btnMap = {};
-
-groups.forEach(g => {
-  const gl = document.createElement('div');
-  gl.className = 'lgrp-label';
-  gl.textContent = g;
+groups.forEach(g=>{
+  const gl=document.createElement('div');
+  gl.className='lgrp-label'; gl.textContent=g;
   btnArea.appendChild(gl);
-
-  const row = document.createElement('div');
-  row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:2px;';
+  const row=document.createElement('div');
+  row.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:2px;';
   btnArea.appendChild(row);
-
-  LINES.filter(l=>l.group===g).forEach(line => {
-    const hasApts = Object.values(APT_LINES).some(v => line.key in v);
-    const btn = document.createElement('button');
-    btn.className = 'lbtn' + (hasApts?'':' inactive');
-    btn.style.cssText = `color:${line.color};border-color:${line.color};`;
-    btn.innerHTML = `<span class="ldot" style="background:${line.color}"></span>${line.label}`;
-    if(hasApts){
-      btn.addEventListener('click', ()=>onLineClick(line.key, line.color, line.label, btn));
-    }
-    btnMap[line.key] = {btn, color:line.color};
+  LINES.filter(l=>l.group===g).forEach(line=>{
+    const has=Object.values(APT_LINES).some(v=>line.key in v);
+    const btn=document.createElement('button');
+    btn.className='lbtn'+(has?'':' inactive');
+    btn.style.cssText=`color:${line.color};border-color:${line.color};`;
+    btn.innerHTML=`<span class="ldot" style="background:${line.color}"></span>${line.label}`;
+    if(has) btn.addEventListener('click',()=>toggleLine(line.key,line.color,btn));
+    btnMap[line.key]={btn,color:line.color};
     row.appendChild(btn);
   });
 });
 
-/* ── 클릭 핸들러 ── */
-function onLineClick(key, color, label, btn){
-  // 토글 off
-  if(activeKey === key){
+/* ── 노선 토글 (중복선택) ── */
+function toggleLine(key, color, btn){
+  if(activeKeys.has(key)){
+    activeKeys.delete(key);
     btn.classList.remove('active');
-    btn.style.background = 'transparent';
-    btn.style.color = color;
-    document.getElementById('lineResult').style.display = 'none';
-    activeKey = null;
-    return;
+    btn.style.background='transparent';
+    btn.style.color=color;
+  } else {
+    activeKeys.add(key);
+    btn.classList.add('active');
+    btn.style.background=color;
+    btn.style.color='#fff';
   }
-  // 이전 버튼 리셋
-  if(activeKey && btnMap[activeKey]){
-    const prev = btnMap[activeKey];
-    prev.btn.classList.remove('active');
-    prev.btn.style.background = 'transparent';
-    prev.btn.style.color = prev.color;
-  }
-  // 새 버튼 활성화
-  btn.classList.add('active');
-  btn.style.background = color;
-  btn.style.color = '#fff';
-  activeKey = key;
+  renderLineResults();
+}
 
-  // 해당 노선 단지 수집 + 정렬
-  const matched = Object.entries(APT_LINES)
-    .filter(([,v]) => key in v)
-    .map(([id,v]) => {
-      const info = aptInfo(id);
-      return {id, station: v[key], total: info.total, tier: info.tier||'', avg: info.avgPrice||0};
-    })
-    .sort((a,b) => b.total - a.total);
+/* ── 결과 렌더 ── */
+function renderLineResults(){
+  const result=document.getElementById('lineResult');
+  const header=document.getElementById('lineResultHeader');
+  const cards=document.getElementById('lineResultCards');
+
+  if(activeKeys.size===0){result.style.display='none'; return;}
+
+  // 선택된 노선별로 해당 단지 수집 (apt → {id, stations[]})
+  const aptMap = {}; // id → {id, stations, total, tier, avg}
+  activeKeys.forEach(key=>{
+    Object.entries(APT_LINES).forEach(([id,v])=>{
+      if(!(key in v)) return;
+      if(!aptMap[id]) {
+        const info=aptInfo(id);
+        aptMap[id]={id, stations:[], lines:[], total:info.total, tier:info.tier||'', avg:info.avgPrice||0};
+      }
+      aptMap[id].stations.push({key, station:v[key]});
+      aptMap[id].lines.push(key);
+    });
+  });
+
+  const matched=Object.values(aptMap).sort((a,b)=>b.total-a.total);
 
   // 헤더
-  const header = document.getElementById('lineResultHeader');
-  header.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};margin-right:6px;vertical-align:middle;"></span>`
-    + `<strong style="color:${color}">${label}</strong>`
-    + `<span style="color:var(--mu);margin-left:8px;">역세권 단지 ${matched.length}개 · 점수 높은 순</span>`;
+  const lineLabels=[...activeKeys].map(k=>{
+    const l=LINES.find(x=>x.key===k);
+    return l?`<span style="display:inline-flex;align-items:center;gap:4px;margin-right:6px"><span style="width:8px;height:8px;border-radius:50%;background:${l.color};display:inline-block"></span>${l.label}</span>`:'';
+  }).join('');
+  header.innerHTML=lineLabels+`<span style="color:var(--mu)">해당 단지 ${matched.length}개 · 점수 높은 순 (복수 노선 수혜 단지 강조)</span>`;
 
   // 카드 렌더
-  const cards = document.getElementById('lineResultCards');
-  const scoreColor = t => t>=85?'#F0C060':t>=75?'#40D090':t>=65?'#60A0FF':t>=55?'#9090C0':'#556080';
-  const tierCls = t => t.includes('4급지')?'tp4':t.includes('5급지')&&t.includes('18위')?'tp5a':t.includes('5급지')&&t.includes('20위')?'tp5b':t.includes('5급지')?'tp5b':'tp6';
-  const isNew = s => s.includes('예정')||s.includes('환승');
+  cards.innerHTML=matched.map(({id,stations,lines,total,tier,avg})=>{
+    const multiLine = lines.length >= 2; // 복수 노선 해당
+    const stHtml=stations.map(({key,station})=>{
+      const l=LINES.find(x=>x.key===key);
+      const c=l?l.color:'#8090B8';
+      return `<div style="font-size:10px;color:${c};font-weight:500;display:flex;align-items:center;gap:4px;margin-bottom:2px;">
+        <span style="width:6px;height:6px;border-radius:50%;background:${c};flex-shrink:0"></span>
+        ${isPlanned(station)?'<span style="font-size:9px;background:rgba(255,160,64,.15);color:#FFA040;padding:1px 4px;border-radius:2px">예정</span>':''}
+        ${station}
+      </div>`;
+    }).join('');
 
-  cards.innerHTML = matched.map(({id,station,total,tier,avg}) => `
-    <div class="lapt-card" style="border-left-color:${color}" onclick="scrollToCard('${id}')">
+    const borderStyle = multiLine
+      ? `border:1.5px solid transparent;background:linear-gradient(var(--s1),var(--s1)) padding-box,linear-gradient(135deg,${stations.map(s=>{const l=LINES.find(x=>x.key===s.key);return l?l.color:'#8090B8';}).join(',')}) border-box;`
+      : `border:1px solid var(--bd);border-left:3px solid ${(()=>{const l=LINES.find(x=>x.key===stations[0].key);return l?l.color:'#8090B8';})()};`;
+
+    return `<div class="lapt-card" style="${borderStyle}background-color:var(--s1);position:relative;" onclick="scrollToCard('${id}')">
       <div class="lapt-name">
         <span>${id}</span>
         <span class="lapt-score" style="color:${scoreColor(total)}">${total}</span>
       </div>
-      <div class="lapt-station" style="color:${color}">
-        ${isNew(station)?'<span style="font-size:9px;background:rgba(255,160,64,.15);color:#FFA040;padding:1px 4px;border-radius:2px;margin-right:4px;">예정</span>':''}${station}
-      </div>
+      <div style="margin-bottom:6px;">${stHtml}</div>
       <div class="lapt-meta">
         <span class="lapt-tier ${tierCls(tier)}">${tier}</span>
         <span class="lapt-price">${avg?avg.toFixed(2)+'억':''}</span>
       </div>
-    </div>`).join('');
+      ${multiLine?`<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">
+        ${stations.map(({key})=>{const l=LINES.find(x=>x.key===key);return l?`<span style="font-size:9px;padding:1px 6px;border-radius:8px;border:1px solid ${l.color};color:${l.color};font-weight:600">${l.label}</span>`:''}).join('')}
+      </div>`:''}
+    </div>`;
+  }).join('');
 
-  document.getElementById('lineResult').style.display = 'block';
-
-  // 섹션 스크롤
-  document.getElementById('lineResult').scrollIntoView({behavior:'smooth', block:'nearest'});
+  result.style.display='block';
 }
 
 })();
+
 </script>
 
 <div class="cards-title" id="card-section">단지별 상세 카드 — 점수 높은 순 (커서 진입 후 휠로 좌우 스크롤)</div>
@@ -570,12 +537,15 @@ function onLineClick(key, color, label, btn){
     <div id="kakaoMap" style="width:100%;height:520px;"></div>
     <!-- 범례 -->
     <div style="position:absolute;bottom:16px;right:16px;background:rgba(14,16,24,.92);border:1px solid #252A3A;border-radius:9px;padding:10px 13px;z-index:2;font-size:11px;">
-      <div style="font-size:10px;color:#566080;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">총점 기준</div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#F0C060;flex-shrink:0"></div>85점↑</div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#40D090;flex-shrink:0"></div>75~84점</div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#60A0FF;flex-shrink:0"></div>65~74점</div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#9090C0;flex-shrink:0"></div>55~64점</div>
-      <div style="display:flex;align-items:center;gap:6px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#556080;flex-shrink:0"></div>54점↓</div>
+      <div style="font-size:10px;color:#566080;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">급지 (배경)</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#50D0A0;flex-shrink:0"></div>4급지</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#B070FF;flex-shrink:0"></div>5급지 동대문</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#9070C8;flex-shrink:0"></div>5급지 성북·강서</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#8090A8;flex-shrink:0"></div>6급지</div>
+      <div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;">총점 (링)</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;border:2px solid #F0C060;flex-shrink:0"></div>85점↑</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;border:2px solid #40D090;flex-shrink:0"></div>75~84점</div>
+      <div style="display:flex;align-items:center;gap:6px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;border:2px solid #556080;flex-shrink:0"></div>64점↓</div>
     </div>
   </div>
 </div>
@@ -614,51 +584,51 @@ function onLineClick(key, color, label, btn){
   document.head.appendChild(s);
 })();
 
-/* ===== 지도 데이터 ===== */
+/* ===== 지도 데이터 (좌표 검증 완료) ===== */
 const _mapData = [
-  {id:"이문e편한세상",  area:"동대문구 이문동", lat:37.5917, lng:127.0587, fk:"5a",
+  {id:"이문e편한세상",  area:"동대문구 이문동",  lat:37.58953, lng:127.05889, fk:"5a",
    급지:15,개발:18,가격:6,역세권:13,세대:11,주거:8,인프라:10,학군:4,
    avg:9.31, trend:"보합", tags:["1·6호선 더블역세권","동북선 2027","이문뉴타운"]},
-  {id:"월곡두산위브",   area:"성북구 하월곡동", lat:37.6077, lng:127.0290, fk:"5b",
+  {id:"월곡두산위브",   area:"성북구 하월곡동",  lat:37.60681, lng:127.02828, fk:"5b",
    급지:12,개발:14,가격:11,역세권:11,세대:11,주거:8,인프라:10,학군:4,
    avg:8.44, trend:"+9.2%", tags:["6호선 월곡역 5분","2,197세대","동북선"]},
-  {id:"이문현대",      area:"동대문구 이문동", lat:37.5895, lng:127.0565, fk:"5a",
+  {id:"이문현대",       area:"동대문구 이문동",  lat:37.58801, lng:127.05710, fk:"5a",
    급지:15,개발:15,가격:11,역세권:11,세대:6,주거:6,인프라:9,학군:4,
    avg:8.12, trend:"+4.0%", tags:["1호선 신이문역 5분","복도식","이문뉴타운"]},
-  {id:"래미안월곡",    area:"성북구 하월곡동", lat:37.6082, lng:127.0270, fk:"5b",
+  {id:"래미안월곡",     area:"성북구 하월곡동",  lat:37.60487, lng:127.03039, fk:"5b",
    급지:12,개발:12,가격:11,역세권:5,세대:9,주거:8,인프라:10,학군:4,
    avg:8.77, trend:"+5.6%", tags:["동북선 신미아역 255m","4호선 12분(현재)","1,372세대 래미안"]},
-  {id:"신길삼성",      area:"영등포구 신길동", lat:37.5085, lng:126.9195, fk:"4",
+  {id:"신길삼성",       area:"영등포구 신길동",  lat:37.50912, lng:126.91829, fk:"4",
    급지:18,개발:13,가격:11,역세권:11,세대:3,주거:4,인프라:10,학군:4,
-   avg:8.42, trend:"+26.6%", tags:["7호선 신풍역 7분","4급지 최고","복도식★500미달"]},
-  {id:"래미안크리시엘",  area:"성북구 종암동",  lat:37.5932, lng:127.0315, fk:"5b",
+   avg:8.42, trend:"+26.6%", tags:["7호선 신풍역 7분","4급지 최고","신안산선 GTX"]},
+  {id:"래미안크리시엘", area:"성북구 종암동",    lat:37.59284, lng:127.03195, fk:"5b",
    급지:12,개발:12,가격:8,역세권:9,세대:9,주거:8,인프라:10,학군:5,
    avg:9.09, trend:"+6.8%", tags:["동북선 종암경찰서역 수혜","6호선 고려대역 8분","학군 만점"]},
-  {id:"삼선푸르지오",   area:"성북구 삼선동",  lat:37.5855, lng:127.0135, fk:"5b",
+  {id:"삼선푸르지오",   area:"성북구 삼선동",    lat:37.58482, lng:127.01415, fk:"5b",
    급지:12,개발:5,가격:12,역세권:7,세대:8,주거:9,인프라:9,학군:5,
    avg:9.10, trend:"+8.7%", tags:["4호선 한성대입구 10분","5.81억 최저","도심접근"]},
-  {id:"문래현대1차",   area:"영등포구 문래동", lat:37.5222, lng:126.8988, fk:"4",
+  {id:"문래현대1차",    area:"영등포구 문래동",  lat:37.52041, lng:126.89672, fk:"4",
    급지:18,개발:14,가격:11,역세권:11,세대:3,주거:4,인프라:9,학군:3,
-   avg:8.34, trend:"+14.5%", tags:["2호선 도림천역 8분","복도식★500미달","통합리모델링"]},
-  {id:"온수힐스테이트",  area:"구로구 온수동",  lat:37.4912, lng:126.8523, fk:"6",
+   avg:8.34, trend:"+14.5%", tags:["2호선 도림천역 8분","통합리모델링","GTX-A·C 삼성환승"]},
+  {id:"온수힐스테이트", area:"구로구 온수동",    lat:37.49208, lng:126.84842, fk:"6",
    급지:8,개발:5,가격:12,역세권:13,세대:9,주거:10,인프라:8,학군:3,
-   avg:7.85, trend:"+1.0%", tags:["1·7호선 온수역 5분","999세대","6급지"]},
-  {id:"종암래미안세레니티",area:"성북구 종암동", lat:37.5892, lng:127.0297, fk:"5b",
+   avg:7.85, trend:"+1.0%", tags:["1·7호선 온수역 5분","999세대","GTX-A 수서환승"]},
+  {id:"종암래미안세레니티",area:"성북구 종암동", lat:37.58905, lng:127.02975, fk:"5b",
    급지:12,개발:12,가격:3,역세권:7,세대:9,주거:9,인프라:9,학군:5,
    avg:9.94, trend:"+2.6%", tags:["동북선 종암경찰서역 수혜","⚠평균 9.94억","62건 최다"]},
-  {id:"꿈의숲푸르지오",  area:"성북구 하월곡동", lat:37.6142, lng:127.0265, fk:"5b",
+  {id:"꿈의숲푸르지오", area:"성북구 하월곡동",  lat:37.61389, lng:127.02717, fk:"5b",
    급지:12,개발:12,가격:10,역세권:4,세대:7,주거:10,인프라:8,학군:4,
    avg:8.47, trend:"+8.4%", tags:["동북선 신미아역 직접수혜","4호선 13분(현재)","꿈의숲"]},
-  {id:"상도동 대림",    area:"동작구 상도동",  lat:37.4978, lng:126.9438, fk:"4",
+  {id:"상도동 대림",    area:"동작구 상도동",    lat:37.49834, lng:126.94328, fk:"4",
    급지:18,개발:11,가격:12,역세권:9,세대:3,주거:5,인프라:8,학군:4,
-   avg:8.28, trend:"+12.7%", tags:["7호선 상도역 5~7분","4급지 동작","서부선 예정"]},
-  {id:"등촌마을서광",   area:"강서구 등촌동",  lat:37.5623, lng:126.8618, fk:"5b",
+   avg:8.28, trend:"+12.7%", tags:["7호선 상도역 5~7분","4급지 동작","GTX-A 수서환승"]},
+  {id:"등촌마을서광",   area:"강서구 등촌동",    lat:37.56248, lng:126.86083, fk:"5b",
    급지:12,개발:8,가격:8,역세권:7,세대:3,주거:7,인프라:8,학군:4,
-   avg:8.96, trend:"+9.1%", tags:["9호선 등촌역 약10분","마곡지구 인접","계단식"]},
-  {id:"가양2단지성지",  area:"강서구 가양동",  lat:37.5653, lng:126.8542, fk:"5b",
+   avg:8.96, trend:"+9.1%", tags:["9호선→삼성 GTX-A·C","등촌역 약10분","마곡지구 인접"]},
+  {id:"가양2단지성지",  area:"강서구 가양동",    lat:37.56451, lng:126.85382, fk:"5b",
    급지:12,개발:10,가격:6,역세권:9,세대:11,주거:4,인프라:7,학군:4,
-   avg:9.70, trend:"+16.2%", tags:["9호선 양천향교역 5~9분","1,624세대","복도식 구축"]}
-];
+   avg:9.70, trend:"+16.2%", tags:["9호선→삼성 GTX-A·C","양천향교역 5~9분","1,624세대"]}
+]
 _mapData.forEach(a => {
   a.total = a.급지+a.개발+a.가격+a.역세권+a.세대+a.주거+a.인프라+a.학군;
 });
@@ -667,12 +637,22 @@ _mapData.sort((a,b) => b.total - a.total);
 /* ===== 지도 초기화 ===== */
 let _map = null, _markers = [], _curOvl = null;
 
-function _markerColor(t){
-  if(t>=85) return {bg:"#F0C060",tx:"#08090D"};
-  if(t>=75) return {bg:"#40D090",tx:"#08090D"};
-  if(t>=65) return {bg:"#60A0FF",tx:"#08090D"};
-  if(t>=55) return {bg:"#9090C0",tx:"#ffffff"};
-  return       {bg:"#556080",tx:"#ffffff"};
+/* 급지별 마커 색상 */
+function _tierColor(fk){
+  return {
+    "4": {bg:"#50D0A0", tx:"#08090D", label:"4급지"},
+    "5a":{bg:"#B070FF", tx:"#ffffff", label:"5급지"},
+    "5b":{bg:"#9070C8", tx:"#ffffff", label:"5급지"},
+    "6": {bg:"#8090A8", tx:"#ffffff", label:"6급지"},
+  }[fk]||{bg:"#9090C0",tx:"#fff",label:""};
+}
+/* 총점 링 색상 (마커 테두리에 활용) */
+function _scoreRingColor(t){
+  if(t>=85) return "#F0C060";
+  if(t>=75) return "#40D090";
+  if(t>=65) return "#60A0FF";
+  if(t>=55) return "#9090C0";
+  return "#556080";
 }
 
 function initMap(){
@@ -687,11 +667,16 @@ function initMap(){
   _mapData.forEach((a, idx) => {
     const rank = idx+1;
     const col = _markerColor(a.total);
-    const svg = '<svg width="44" height="52" viewBox="0 0 44 52" xmlns="http://www.w3.org/2000/svg">'
-      +'<filter id="f'+idx+'"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="rgba(0,0,0,.55)"/></filter>'
-      +'<path d="M22 2C12.6 2 5 9.6 5 19c0 12 17 31 17 31s17-19 17-31C39 9.6 31.4 2 22 2z" fill="'+col.bg+'" filter="url(#f'+idx+')"/>'
-      +'<text x="22" y="22" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-weight="700" font-size="11" fill="'+col.tx+'">'+a.total+'</text>'
-      +'<text x="22" y="33" text-anchor="middle" font-family="Noto Sans KR,sans-serif" font-size="8" fill="'+col.tx+'">'+rank+'위</text>'
+    const tc  = _tierColor(a.fk);
+    const ring = _scoreRingColor(a.total);
+    const svg = '<svg width="48" height="58" viewBox="0 0 48 58" xmlns="http://www.w3.org/2000/svg">'
+      +'<filter id="f'+idx+'"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,.6)"/></filter>'
+      /* 외곽 링 (총점색) */
+      +'<path d="M24 2C13.5 2 5 10.5 5 21c0 13 19 35 19 35s19-22 19-35C43 10.5 34.5 2 24 2z" fill="'+ring+'" filter="url(#f'+idx+')"/>'
+      /* 내부 (급지색) */
+      +'<path d="M24 5C15.2 5 8 12.2 8 21c0 11.5 16 30 16 30s16-18.5 16-30C40 12.2 32.8 5 24 5z" fill="'+tc.bg+'"/>'
+      +'<text x="24" y="23" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-weight="900" font-size="11" fill="'+tc.tx+'">'+a.total+'</text>'
+      +'<text x="24" y="34" text-anchor="middle" font-family="Noto Sans KR,sans-serif" font-size="8" font-weight="700" fill="'+tc.tx+'">'+rank+'위</text>'
       +'</svg>';
     const img = new kakao.maps.MarkerImage(
       'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg),
@@ -746,6 +731,256 @@ function initMap(){
     _markers.push({marker, iw, fk: a.fk});
   });
 
+
+  /* ===== 급지별 구 오버레이 ===== */
+  const TIER_ZONES = [
+    /* 4급지 — 초록 */
+    {name:"영등포구", tier:"4", color:"rgba(80,208,160,0.12)", stroke:"rgba(80,208,160,0.5)",
+     path:[[37.5391,126.8923],[37.5391,126.9380],[37.5028,126.9380],[37.5028,126.8923]]},
+    {name:"동작구",   tier:"4", color:"rgba(80,208,160,0.12)", stroke:"rgba(80,208,160,0.5)",
+     path:[[37.5090,126.9248],[37.5090,126.9735],[37.4820,126.9735],[37.4820,126.9248]]},
+    /* 5급지(동대문) — 보라 */
+    {name:"동대문구", tier:"5a", color:"rgba(176,112,255,0.12)", stroke:"rgba(176,112,255,0.5)",
+     path:[[37.5793,126.9968],[37.5793,127.0812],[37.5459,127.0812],[37.5459,126.9968]]},
+    /* 5급지(성북·강서) — 연보라 */
+    {name:"성북구",   tier:"5b", color:"rgba(144,112,200,0.12)", stroke:"rgba(144,112,200,0.5)",
+     path:[[37.6238,127.0642],[37.6238,127.0022],[37.5738,127.0022],[37.5738,127.0642]]},
+    {name:"강서구",   tier:"5b", color:"rgba(144,112,200,0.12)", stroke:"rgba(144,112,200,0.5)",
+     path:[[37.5820,126.8232],[37.5820,126.8870],[37.5368,126.8870],[37.5368,126.8232]]},
+    /* 6급지 — 회색 */
+    {name:"구로구",   tier:"6",  color:"rgba(128,144,168,0.12)", stroke:"rgba(128,144,168,0.5)",
+     path:[[37.5040,126.8268],[37.5040,126.8750],[37.4680,126.8750],[37.4680,126.8268]]},
+  ];
+
+  TIER_ZONES.forEach(zone => {
+    const path = zone.path.map(([lat,lng]) => new kakao.maps.LatLng(lat, lng));
+    const poly = new kakao.maps.Polygon({
+      map: _map,
+      path: path,
+      strokeWeight: 1.5,
+      strokeColor: zone.stroke,
+      strokeOpacity: 1,
+      fillColor: zone.color,
+      fillOpacity: 1,
+    });
+
+    /* 구 이름 라벨 — CustomOverlay */
+    const center = zone.path.reduce(([la,ln],[a,b])=>[la+a,ln+b],[0,0]);
+    const cLat = center[0]/zone.path.length;
+    const cLng = center[1]/zone.path.length;
+    const tierColors = {"4":"#50D0A0","5a":"#B070FF","5b":"#9070C8","6":"#8090A8"};
+    const label = new kakao.maps.CustomOverlay({
+      map: _map,
+      position: new kakao.maps.LatLng(cLat, cLng),
+      content: `<div style="font-size:10px;font-weight:700;color:${tierColors[zone.tier]};opacity:.7;pointer-events:none;white-space:nowrap;font-family:'Noto Sans KR',sans-serif;">${zone.name}</div>`,
+      zIndex: 1,
+    });
+  });
+
+
+  /* ===== 개발호재 오버레이 ===== */
+
+  /* ── 단계별 색상 팔레트 ── */
+  const HC = {
+    done:    {fill:"rgba(64,208,144,.13)",  stroke:"#40D090", dash:false, label:"완료"},
+    active:  {fill:"rgba(255,160,64,.13)",  stroke:"#FFA040", dash:false, label:"공사중"},
+    plan:    {fill:"rgba(255,128,152,.12)", stroke:"#FF8098", dash:true,  label:"계획·예정"},
+    railway: {fill:"rgba(227,30,36,.10)",   stroke:"#E31E24", dash:true,  label:"철도(예정)"},
+    infra:   {fill:"rgba(96,160,255,.10)",  stroke:"#60A0FF", dash:true,  label:"인프라"},
+  };
+
+  /* 원형 폴리곤 생성 (반경m) */
+  function circlePolygon(lat, lng, radiusM, steps=48){
+    const pts=[];
+    const dLat = (radiusM/111320);
+    const dLng = (radiusM/(111320*Math.cos(lat*Math.PI/180)));
+    for(let i=0;i<steps;i++){
+      const a=2*Math.PI*i/steps;
+      pts.push(new kakao.maps.LatLng(lat+dLat*Math.sin(a), lng+dLng*Math.cos(a)));
+    }
+    return pts;
+  }
+
+  const _horaeOverlays = []; // 모든 오버레이 저장 (토글용)
+  const _horaeLabels   = []; // 라벨 오버레이
+
+  function addZone(name, stage, lat, lng, radiusM, extraInfo){
+    const c = HC[stage];
+    const path = circlePolygon(lat, lng, radiusM);
+    const poly = new kakao.maps.Polygon({
+      map: _map, path,
+      strokeWeight: stage==='done'?1.5:1.5,
+      strokeColor: c.stroke, strokeOpacity: 0.85,
+      strokeStyle: c.dash ? 'shortdash' : 'solid',
+      fillColor: c.fill, fillOpacity: 1,
+    });
+
+    /* 라벨 */
+    const lbl = new kakao.maps.CustomOverlay({
+      map: _map,
+      position: new kakao.maps.LatLng(lat, lng),
+      content: `<div class="_horae-lbl" style="font-size:9px;font-weight:700;color:${c.stroke};background:rgba(8,9,13,.78);padding:2px 6px;border-radius:5px;border:1px solid ${c.stroke};white-space:nowrap;pointer-events:none;text-align:center;line-height:1.5;">${name}<br><span style="font-size:8px;opacity:.8">${c.label}</span></div>`,
+      zIndex: 2,
+    });
+
+    /* 클릭 팝업 */
+    kakao.maps.event.addListener(poly, 'click', function(e){
+      if(_horaePopup) _horaePopup.setMap(null);
+      _horaePopup = new kakao.maps.CustomOverlay({
+        map: _map,
+        position: e.latLng,
+        content: `<div style="background:#0E1018;border:1px solid ${c.stroke};border-radius:9px;padding:10px 13px;min-width:180px;max-width:230px;font-family:'Noto Sans KR',sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.6);">
+          <div style="font-size:12px;font-weight:700;color:#DDE2F0;margin-bottom:4px;">${name}</div>
+          <div style="font-size:10px;background:${c.fill};border:1px solid ${c.stroke};color:${c.stroke};padding:1px 7px;border-radius:6px;display:inline-block;margin-bottom:6px;">${c.label}</div>
+          <div style="font-size:10px;color:#8090B8;line-height:1.7;">${extraInfo}</div>
+          <div onclick="(function(){window._horaePopup&&window._horaePopup.setMap(null);})()" style="font-size:10px;color:#556080;cursor:pointer;margin-top:6px;text-align:right;">닫기 ✕</div>
+        </div>`,
+        zIndex: 5,
+      });
+      window._horaePopup = _horaePopup;
+    });
+
+    _horaeOverlays.push({poly, lbl, name, stage});
+  }
+
+  function addPolyline(name, stage, coords, extraInfo){
+    const c = HC[stage];
+    const path = coords.map(([la,ln])=>new kakao.maps.LatLng(la,ln));
+    const line = new kakao.maps.Polyline({
+      map: _map, path,
+      strokeWeight: 4,
+      strokeColor: c.stroke, strokeOpacity: 0.75,
+      strokeStyle: c.dash ? 'shortdash' : 'solid',
+    });
+    kakao.maps.event.addListener(line, 'click', function(e){
+      if(_horaePopup) _horaePopup.setMap(null);
+      _horaePopup = new kakao.maps.CustomOverlay({
+        map: _map, position: e.latLng,
+        content: `<div style="background:#0E1018;border:1px solid ${c.stroke};border-radius:9px;padding:10px 13px;min-width:180px;max-width:230px;font-family:'Noto Sans KR',sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.6);">
+          <div style="font-size:12px;font-weight:700;color:#DDE2F0;margin-bottom:4px;">${name}</div>
+          <div style="font-size:10px;background:${c.fill};border:1px solid ${c.stroke};color:${c.stroke};padding:1px 7px;border-radius:6px;display:inline-block;margin-bottom:6px;">${c.label}</div>
+          <div style="font-size:10px;color:#8090B8;line-height:1.7;">${extraInfo}</div>
+          <div onclick="(function(){window._horaePopup&&window._horaePopup.setMap(null);})()" style="font-size:10px;color:#556080;cursor:pointer;margin-top:6px;text-align:right;">닫기 ✕</div>
+        </div>`,
+        zIndex:5,
+      });
+      window._horaePopup = _horaePopup;
+    });
+    _horaeOverlays.push({poly:line, lbl:null, name, stage});
+  }
+
+  let _horaePopup = null;
+
+  /* ── 1. 이문·휘경 뉴타운 ── */
+  addZone('이문1·3구역 완료', 'done', 37.5880, 127.0588, 320,
+    '래미안라그란데(이문1) · 이문아이파크자이(이문3) 완공<br>총 약 6,900세대 준공');
+  addZone('이문4구역 착공예정', 'active', 37.5900, 127.0670, 350,
+    '3,488세대 · 최고43층 · 2027 상반기 착공<br>롯데건설·현대건설 컨소시엄<br>외대앞역 역세권');
+  addZone('이문2구역 추진중', 'plan', 37.5865, 127.0545, 180,
+    '1,265세대 · 최고40층<br>장기전세 251가구 포함<br>정비계획 변경안 가결');
+
+  /* ── 2. 동북선 경전철 ── */
+  addPolyline('동북선 경전철 (2027.11 개통목표)', 'active', [
+    [37.5614,127.0378], // 왕십리
+    [37.5695,127.0368], // 마장
+    [37.5785,127.0272], // 제기동
+    [37.5870,127.0272], // 고려대
+    [37.5920,127.0280], // 종암
+    [37.5952,127.0295], // 종암경찰서
+    [37.6013,127.0247], // 미아사거리
+    [37.6080,127.0275], // 신미아
+    [37.6141,127.0235], // 북서울꿈의숲
+    [37.6211,127.0180], // 우이천
+    [37.6278,127.0475], // 월계
+    [37.6347,127.0626], // 하계
+    [37.6415,127.0715], // 서울시립과학관
+    [37.6489,127.0720], // 은행사거리
+    [37.6548,127.0872], // 불암산
+    [37.6599,127.0968], // 상계
+  ], '착공 진행중 · 2021년 7월 착공<br>왕십리~상계 13.4km 16개역<br>왕십리에서 2·5호선·경의중앙·분당선·GTX-C 환승');
+
+  /* ── 3. 상도14·15구역 재개발 ── */
+  addZone('상도14구역', 'active', 37.4998, 126.9388, 200,
+    '1,191세대 · 최고29층<br>신속통합기획 정비계획 결정(2024)<br>상도동 244번지 일대 5만788㎡');
+  addZone('상도15구역', 'plan', 37.4975, 126.9445, 320,
+    '3,204세대 · 최고35층<br>사업시행인가 진행중<br>상도동 279번지 일대 14만1297㎡');
+
+  /* ── 4. 서부선 경전철 ── */
+  addPolyline('서부선 경전철 (2030 준공목표)', 'plan', [
+    [37.5952,126.9208], // 새절역(6호선)
+    [37.5824,126.9208], // 증산
+    [37.5710,126.9178], // 망원
+    [37.5552,126.9278], // 합정
+    [37.5378,126.9265], // 당산
+    [37.5228,126.9248], // 영등포
+    [37.5095,126.9275], // 신길
+    [37.4985,126.9398], // 신상도(가칭)
+    [37.4858,126.9402], // 숭실대입구(가칭)
+    [37.4782,126.9528], // 서울대입구
+  ], '새절역~서울대입구역 16개역<br>신상도역(가칭) 신설 예정<br>2030년 준공 목표 · 착공 준비중');
+
+  /* ── 5. 문래동 통합리모델링 ── */
+  addZone('문래동 통합리모델링', 'plan', 37.5213, 126.8969, 280,
+    '7개단지 통합리모델링 추진<br>1,973세대 규모 → 2,000세대↑<br>인허가 절차 진행중');
+
+  /* ── 6. 신안산선 ── */
+  addPolyline('신안산선 (2028 개통목표)', 'plan', [
+    [37.5218,126.9248], // 여의도
+    [37.5108,126.9188], // 샛강
+    [37.5028,126.9185], // 신풍(신길삼성 인근)
+    [37.4778,126.8928], // 광명(경유)
+  ], '여의도~안산 44.7km<br>2025.04 광명 붕괴·2025.12 여의도 붕괴 → 2028년 재연기<br>신풍역 정차 예정(신길삼성 수혜)');
+
+  /* ── 7. 동부간선도로 지하화 ── */
+  addPolyline('동부간선도로 지하화', 'plan', [
+    [37.5785,127.0532], // 이문동 북
+    [37.5702,127.0512], // 이문동 남
+    [37.5622,127.0492], // 회기
+    [37.5541,127.0498], // 청량리
+  ], '동부간선도로 이문~청량리 구간 지하화<br>이문·휘경 뉴타운 접근성 개선<br>서울시 기반시설 정비계획');
+
+  /* ── 8. 가양 재건축 예정 ── */
+  addZone('가양 3·6단지 재건축 추진', 'plan', 37.5650, 126.8525, 350,
+    '가양아파트 3·6단지 정밀안전진단 추진중<br>1992~1993년 건축 노후계획도시 특별법 적용<br>2단지(가양2단지성지) 인근 재건축 낙수효과 기대');
+
+  /* ── 9. GTX 삼성역 ── */
+  addZone('GTX-A·C 삼성역', 'active', 37.5084,127.0630, 250,
+    'GTX-A 2026 하반기 삼성역 무정차 통과<br>GTX-C 2028 개통목표<br>9호선 → 삼성역 환승 (등촌·가양 수혜)');
+
+  /* ── 개발호재 토글 버튼 ── */
+  const horaeToggleWrap = document.createElement('div');
+  horaeToggleWrap.style.cssText = 'position:absolute;top:12px;left:12px;z-index:10;display:flex;flex-direction:column;gap:4px;';
+
+  let horaeVisible = true;
+  const toggleBtn = document.createElement('button');
+  toggleBtn.style.cssText = 'font-size:11px;padding:5px 11px;border-radius:7px;border:1px solid rgba(255,128,152,.5);background:rgba(14,16,24,.85);color:#FF8098;cursor:pointer;font-family:"Noto Sans KR",sans-serif;backdrop-filter:blur(6px);white-space:nowrap;';
+  toggleBtn.textContent = '개발호재 표시 ON';
+  toggleBtn.addEventListener('click', ()=>{
+    horaeVisible = !horaeVisible;
+    _horaeOverlays.forEach(({poly,lbl})=>{
+      poly.setMap(horaeVisible ? _map : null);
+      if(lbl) lbl.setMap(horaeVisible ? _map : null);
+    });
+    toggleBtn.textContent = horaeVisible ? '개발호재 표시 ON' : '개발호재 표시 OFF';
+    toggleBtn.style.color  = horaeVisible ? '#FF8098' : '#566080';
+    toggleBtn.style.borderColor = horaeVisible ? 'rgba(255,128,152,.5)' : 'rgba(86,96,128,.3)';
+  });
+  horaeToggleWrap.appendChild(toggleBtn);
+
+  /* 범례 */
+  const horaeLegend = document.createElement('div');
+  horaeLegend.style.cssText = 'background:rgba(14,16,24,.85);border:1px solid #252A3A;border-radius:8px;padding:8px 11px;font-size:10px;backdrop-filter:blur(6px);';
+  horaeLegend.innerHTML = Object.entries(HC).map(([k,v])=>
+    `<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;color:#8090B8">
+      <div style="width:18px;height:3px;background:${v.stroke};border-radius:2px;flex-shrink:0;${v.dash?'background:repeating-linear-gradient(90deg,'+v.stroke+' 0,'+v.stroke+' 4px,transparent 4px,transparent 7px)':''}"></div>
+      ${v.label}
+    </div>`
+  ).join('');
+  horaeToggleWrap.appendChild(horaeLegend);
+
+  document.getElementById('kakaoMap').style.position = 'relative';
+  document.getElementById('kakaoMap').appendChild(horaeToggleWrap);
+
   kakao.maps.event.addListener(_map, 'click', function(){
     if(_curOvl){ _curOvl.setMap(null); _curOvl=null; }
   });
@@ -785,6 +1020,335 @@ if(window.kakao && window.kakao.maps){
 }
 
 </script>
+
+<style>
+/* 비교 플로팅 바 */
+#cmpBar{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:rgba(14,16,24,.96);border:1px solid var(--bd2);
+  border-radius:14px;padding:10px 16px;display:none;
+  align-items:center;gap:12px;z-index:100;backdrop-filter:blur(12px);
+  box-shadow:0 8px 32px rgba(0,0,0,.5);min-width:320px;
+}
+#cmpBar .cb-chips{display:flex;gap:6px;flex:1;flex-wrap:wrap;}
+#cmpBar .cb-chip{
+  font-size:11px;padding:3px 10px;border-radius:12px;
+  background:rgba(96,160,255,.12);border:1px solid rgba(96,160,255,.3);
+  color:var(--bronze);white-space:nowrap;
+}
+#cmpBar .cb-btn{
+  font-size:12px;font-weight:700;padding:6px 16px;border-radius:8px;
+  background:var(--gold);color:#08090D;border:none;cursor:pointer;
+  white-space:nowrap;transition:filter .15s;
+}
+#cmpBar .cb-btn:hover{filter:brightness(1.1);}
+#cmpBar .cb-clear{font-size:11px;color:var(--mu);cursor:pointer;padding:4px 8px;border:none;background:none;}
+#cmpBar .cb-clear:hover{color:var(--tx);}
+/* 비교 모달 */
+#cmpModal{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
+  z-index:200;overflow-y:auto;padding:24px 16px;
+}
+#cmpInner{
+  max-width:960px;margin:0 auto;background:var(--s1);
+  border:1px solid var(--bd);border-radius:16px;overflow:hidden;
+}
+.cmp-hdr{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 20px;border-bottom:1px solid var(--bd);
+}
+.cmp-hdr-title{font-size:15px;font-weight:700;}
+.cmp-close{background:none;border:none;color:var(--mu2);cursor:pointer;font-size:18px;}
+.cmp-grid{display:grid;gap:0;overflow-x:auto;}
+.cmp-row{display:contents;}
+.cmp-cell{
+  padding:10px 14px;border-bottom:1px solid var(--bd);
+  border-right:1px solid var(--bd);font-size:12px;
+  vertical-align:middle;
+}
+.cmp-cell:last-child{border-right:none;}
+.cmp-label{background:var(--s2);color:var(--mu);font-size:11px;font-weight:600;white-space:nowrap;}
+.cmp-apt-hdr{background:var(--s2);text-align:center;font-size:13px;font-weight:700;padding:12px 14px;}
+.cmp-bar-wrap{display:flex;align-items:center;gap:6px;}
+.cmp-bar-track{flex:1;height:5px;background:var(--s3);border-radius:3px;overflow:hidden;min-width:60px;}
+.cmp-bar-fill{height:100%;border-radius:3px;}
+.cmp-num{font-family:'IBM Plex Mono';font-weight:700;font-size:12px;min-width:18px;text-align:right;}
+.cmp-best{color:var(--green);font-weight:700;}
+.cmp-worst{color:var(--mu);}
+.cmp-section{
+  grid-column:1/-1;background:rgba(96,160,255,.04);
+  padding:6px 14px;font-size:10px;font-weight:700;
+  color:var(--mu);text-transform:uppercase;letter-spacing:.1em;
+  border-bottom:1px solid var(--bd);
+}
+</style>
+
+<div id="cmpBar">
+  <div style="font-size:10px;color:var(--mu);white-space:nowrap">비교 선택</div>
+  <div class="cb-chips" id="cmpChips"></div>
+  <button class="cb-btn" onclick="openCmpModal()">비교 분석</button>
+  <button class="cb-clear" onclick="clearCmp()">초기화</button>
+</div>
+
+<div id="cmpModal">
+  <div id="cmpInner">
+    <div class="cmp-hdr">
+      <div class="cmp-hdr-title">단지 비교 분석</div>
+      <button class="cmp-close" onclick="closeCmpModal()">✕</button>
+    </div>
+    <div id="cmpContent" style="overflow-x:auto;"></div>
+  </div>
+</div>
+
+<script>
+/* ── 비교 기능 ── */
+const _cmpSelected = new Set();
+
+function onCmpChange(chk){
+  const id = chk.dataset.id;
+  if(chk.checked){
+    if(_cmpSelected.size >= 3){ chk.checked=false; alert('최대 3개까지 선택할 수 있습니다.'); return; }
+    _cmpSelected.add(id);
+  } else {
+    _cmpSelected.delete(id);
+  }
+  updateCmpBar();
+}
+
+function updateCmpBar(){
+  const bar = document.getElementById('cmpBar');
+  const chips = document.getElementById('cmpChips');
+  if(_cmpSelected.size === 0){ bar.style.display='none'; return; }
+  bar.style.display='flex';
+  chips.innerHTML = [..._cmpSelected].map(id=>`<span class="cb-chip">${id}</span>`).join('');
+}
+
+function clearCmp(){
+  _cmpSelected.clear();
+  document.querySelectorAll('.cmp-chk').forEach(c=>c.checked=false);
+  document.querySelectorAll('tr[id^="rank-row-"]').forEach(r=>r.style.outline='');
+  updateCmpBar();
+}
+
+function closeCmpModal(){ document.getElementById('cmpModal').style.display='none'; }
+
+function openCmpModal(){
+  if(_cmpSelected.size < 2){ alert('2개 이상 선택해주세요.'); return; }
+  const selected = [..._cmpSelected].map(id=> apts.find(a=>a.id===id)).filter(Boolean);
+  renderCmpModal(selected);
+  document.getElementById('cmpModal').style.display='block';
+}
+
+function renderCmpModal(list){
+  const n = list.length;
+  const cols = `140px ${list.map(()=>'1fr').join(' ')}`;
+
+  /* 총점 계산 */
+  function calcTotal(a){ return a.급지+a.개발호재+a.가격+a.역세권+a.세대수+a.주거+a.인프라+a.학군; }
+  list.forEach(a=>{ a._total = calcTotal(a); });
+
+  const ROWS = [
+    {section:"기본 정보"},
+    {label:"급지",       key:"tier",       type:"text"},
+    {label:"입주년도",    key:"year",       type:"text"},
+    {label:"세대수",     key:"units",      type:"text", fmt:v=>v.toLocaleString()+'세대'},
+    {label:"3개월 평균", key:"avgPrice",   type:"text", fmt:v=>v.toFixed(2)+'억'},
+    {label:"상승률",     key:"trend",      type:"text"},
+    {section:"항목별 점수 (100점 만점)"},
+    {label:"총점",       key:"_total",     type:"bar", max:100, color:"var(--gold)"},
+    {label:"급지",       key:"급지",       type:"bar", max:18,  color:"var(--c1)"},
+    {label:"개발호재",   key:"개발호재",   type:"bar", max:18,  color:"var(--c7)"},
+    {label:"가격",       key:"가격",       type:"bar", max:15,  color:"var(--c8)"},
+    {label:"역세권",     key:"역세권",     type:"bar", max:13,  color:"var(--c3)"},
+    {label:"세대수점수", key:"세대수",     type:"bar", max:11,  color:"var(--c2)"},
+    {label:"주거편의",   key:"주거",       type:"bar", max:10,  color:"var(--c4)"},
+    {label:"인프라",     key:"인프라",     type:"bar", max:10,  color:"var(--c5)"},
+    {label:"학군",       key:"학군",       type:"bar", max:5,   color:"var(--c6)"},
+    {section:"입지 분석"},
+    {label:"역세권",     key:"역세권text", type:"text"},
+    {label:"개발호재",   key:"horae",      type:"horae"},
+  ];
+
+  function getVals(row){
+    return list.map(a=>{
+      if(row.key==='horae') return (a.horae||{}).t||'-';
+      return a[row.key];
+    });
+  }
+  function getBest(key){ return Math.max(...list.map(a=>Number(a[key])||0)); }
+  function getWorst(key){ return Math.min(...list.map(a=>Number(a[key])||0)); }
+
+  /* 헤더 */
+  const headerRow = `
+    <div class="cmp-cell cmp-label" style="background:var(--s2)"></div>
+    ${list.map(a=>`<div class="cmp-cell cmp-apt-hdr">
+      <div>${a.id}</div>
+      <div style="font-size:10px;color:var(--mu);margin-top:2px;">${a.area}</div>
+    </div>`).join('')}`;
+
+  /* 점수 행 렌더 */
+  const bodyRows = ROWS.map(row=>{
+    if(row.section) return `<div class="cmp-section" style="grid-column:1/-1">${row.section}</div>`;
+    const vals = getVals(row);
+
+    const cells = vals.map((v,i)=>{
+      if(row.type==='bar'){
+        const num   = Number(v)||0;
+        const best  = getBest(row.key);
+        const worst = getWorst(row.key);
+        const isBest  = num===best  && n>1;
+        const isWorst = num===worst && n>1 && worst!==best;
+        const pct   = Math.round(num/row.max*100);
+
+        /* ── 2개 비교: 최고 단지에 점수 차이 표시 ── */
+        let diffBadge = '';
+        if(n===2 && isBest){
+          const other = vals.filter((_,j)=>j!==i).map(x=>Number(x)||0);
+          const diff  = num - Math.max(...other);
+          if(diff>0) diffBadge = `<span style="font-size:9px;background:rgba(64,208,144,.18);color:var(--green);padding:1px 5px;border-radius:6px;font-weight:700;margin-left:3px;">+${diff}</span>`;
+        }
+
+        /* ── 3개 비교: 최고만 컬러, 나머지는 회색 ── */
+        const barColor = (n===3 && !isBest) ? 'rgba(128,128,160,.35)' : row.color;
+        const numColor = (n===3 && !isBest) ? 'var(--mu)' : (isBest?'var(--green)':isWorst?'var(--mu)':'var(--tx)');
+
+        return `<div class="cmp-cell">
+          <div class="cmp-bar-wrap">
+            <div class="cmp-bar-track"><div class="cmp-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+            <span class="cmp-num" style="color:${numColor};font-weight:${isBest?'900':'600'}">${num}</span>
+            ${diffBadge}
+          </div>
+        </div>`;
+      }
+      const disp = row.fmt ? row.fmt(v) : (v||'-');
+      return `<div class="cmp-cell" style="font-size:11px;">${disp}</div>`;
+    }).join('');
+
+    return `<div class="cmp-cell cmp-label">${row.label}</div>${cells}`;
+  }).join('');
+
+  /* ── AI 투자 코멘트 ── */
+  const comment = generateInvestComment(list);
+
+  document.getElementById('cmpContent').innerHTML = `
+    <div class="cmp-grid" style="display:grid;grid-template-columns:${cols};">
+      ${headerRow}
+      ${bodyRows}
+    </div>
+    <div style="padding:16px 20px;border-top:1px solid var(--bd);">
+      <div style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;">투자 분석 코멘트</div>
+      ${comment}
+    </div>`;
+}
+
+/* ── 투자 코멘트 생성 ── */
+function generateInvestComment(list){
+  list.forEach(a=>{ a._total = a._total||a.급지+a.개발호재+a.가격+a.역세권+a.세대수+a.주거+a.인프라+a.학군; });
+  const sorted = [...list].sort((a,b)=>b._total-a._total);
+  const best   = sorted[0];
+  const n      = list.length;
+
+  /* 각 단지 특성 분석 */
+  function aptTag(a){
+    const tags = [];
+    if(a.급지>=18)       tags.push({t:'최고급지', c:'#50D0A0'});
+    else if(a.급지>=15)  tags.push({t:'동대문5급지', c:'#B070FF'});
+    if(a.개발호재>=15)   tags.push({t:'호재강함', c:'#FF8098'});
+    if(a.역세권>=13)     tags.push({t:'더블역세권', c:'#60A0FF'});
+    if(a.가격>=12)       tags.push({t:'가격매력', c:'#60DDD0'});
+    if(a.세대수>=11)     tags.push({t:'대단지', c:'#FFA040'});
+    if(a.avgPrice>=9.5)  tags.push({t:'⚠10억근접', c:'#FF6070'});
+    return tags;
+  }
+
+  /* 단지별 총평 */
+  function aptSummary(a){
+    const t = a._total;
+    const pros = [], cons = [];
+
+    if(a.급지>=18)       pros.push('4급지 최우선 급지');
+    else if(a.급지>=15)  pros.push('동대문구 18위 준수한 급지');
+    if(a.개발호재>=15)   pros.push('동북선·재개발 등 강한 개발호재');
+    else if(a.개발호재>=12) pros.push('동북선 직접수혜 예정');
+    if(a.역세권>=13)     pros.push('더블역세권 만점');
+    else if(a.역세권>=9) pros.push('역세권 양호');
+    if(a.가격>=12)       pros.push(`3개월 평균 ${a.avgPrice.toFixed(2)}억으로 예산 여유`);
+    if(a.세대수>=9)      pros.push('500세대 이상 안정적 유동성');
+    if(a.avgPrice>=9.5)  cons.push(`평균가 ${a.avgPrice.toFixed(2)}억 — 10억 초과 리스크`);
+    if(a.세대수<=3)      cons.push('500세대 미달 — 유동성 취약');
+    if(a.역세권<=4)      cons.push('현재 역세권 취약(동북선 개통 전)');
+    if(a.개발호재<=5)    cons.push('뚜렷한 개발호재 없음');
+
+    const tagHtml = aptTag(a).map(({t,c})=>`<span style="font-size:9px;padding:1px 6px;border-radius:6px;background:${c}22;color:${c};font-weight:600;margin-right:3px;">${t}</span>`).join('');
+
+    return `<div style="background:var(--s2);border-radius:9px;padding:12px 14px;margin-bottom:8px;${a===best?'border:1px solid rgba(240,192,96,.3)':'border:1px solid var(--bd)'}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-size:13px;font-weight:700;">${a.id}</span>
+        <span style="font-size:14px;font-weight:900;font-family:'IBM Plex Mono';color:${a===best?'var(--gold)':'var(--mu2)'}">${t}점</span>
+        ${a===best?'<span style="font-size:9px;background:rgba(240,192,96,.15);color:var(--gold);padding:2px 7px;border-radius:8px;font-weight:700;">종합 1위</span>':''}
+        <span style="margin-left:2px">${tagHtml}</span>
+      </div>
+      <div style="font-size:11px;color:var(--mu2);line-height:1.8;">
+        ${pros.length?`<span style="color:var(--green);font-weight:700">강점</span> ${pros.join(' · ')}<br>`:''}
+        ${cons.length?`<span style="color:var(--red);font-weight:700">약점</span> ${cons.join(' · ')}`:''}
+      </div>
+    </div>`;
+  }
+
+  /* 최종 추천 문구 */
+  function finalRec(sorted, n){
+    const a = sorted[0], b = sorted[1];
+    const gap = a._total - b._total;
+
+    let rec = '';
+
+    /* 케이스별 분기 */
+    const is4tier  = a.급지>=18;
+    const hasHorae = a.개발호재>=12;
+    const dblLine  = a.역세권>=13;
+    const priceOk  = a.avgPrice<9.0;
+    const nearBudget = a.avgPrice>=9.3;
+
+    if(nearBudget && !priceOk){
+      rec += `<span style="color:var(--red);font-weight:700">[예산 주의]</span> ${a.id}은 3개월 평균 ${a.avgPrice.toFixed(2)}억으로 10억 목전입니다. 매수 타이밍 판단 시 호가 추이를 반드시 확인하세요.<br>`;
+    }
+
+    if(gap>=10){
+      rec += `${a.id}이 ${gap}점 차로 압도적 우위입니다. `;
+    } else if(gap>=5){
+      rec += `${a.id}이 ${gap}점 앞서나 격차는 크지 않습니다. `;
+    } else {
+      rec += `두 단지 간 점수 차(${gap}점)가 작아 개인 우선순위에 따라 선택이 갈릴 수 있습니다. `;
+    }
+
+    if(is4tier && hasHorae)
+      rec += `${a.id}은 4급지 최상위 입지에 개발호재까지 갖춰 중장기 보유 전략에 유리합니다. `;
+    else if(hasHorae && !is4tier)
+      rec += `${a.id}은 동북선·재개발 호재가 실현되는 2027년 이후를 겨냥한 3~5년 보유 전략이 적합합니다. `;
+    else if(dblLine)
+      rec += `${a.id}은 더블역세권으로 실거주 편의성과 환금성이 모두 우수합니다. `;
+
+    if(n===2){
+      const loser = sorted[1];
+      if(loser.세대수<=3)
+        rec += `반면 ${loser.id}은 세대수 부족(500세대 미달)으로 급매 시 환금성이 떨어질 수 있어 실거주 목적 외 투자는 신중히 고려하세요. `;
+      if(loser.avgPrice<8.5 && loser._total>=65)
+        rec += `다만 ${loser.id}은 현재 가격이 낮아 저가 매수 관점에서 매력이 있습니다. `;
+    }
+
+    /* 공통 면책 */
+    rec += `<span style="color:var(--mu);font-size:10px;">※ 이 코멘트는 입력된 데이터 기반 참고용입니다. 실제 매수 결정 전 현장 확인 및 전문가 상담을 권장합니다.</span>`;
+    return rec;
+  }
+
+  const summaries = sorted.map(aptSummary).join('');
+  const finalHtml = `<div style="background:rgba(240,192,96,.04);border:1px solid rgba(240,192,96,.2);border-radius:9px;padding:12px 14px;font-size:11px;color:var(--mu2);line-height:1.9;">
+    <span style="color:var(--gold);font-weight:700;">최종 추천</span><br>${finalRec(sorted, n)}</div>`;
+
+  return summaries + finalHtml;
+}
+</script>
+
 
 <script>
 const apts = [
@@ -898,16 +1462,16 @@ const apts = [
    pros:["동북선 108역 신미아역 직접수혜(래미안월곡과 동일권역)","2010년 준신축·커뮤니티·지하주차","꿈의숲 대형공원 인접"],
    cons:["현재 역세권 최하(13분) — 동북선 개통 전까지 불편","9건 거래 유동성 최저","최저가 8.1억→10억 내 여유 없음"]},
 
-  {id:"상도동 대림",   area:"동작구 상도동", year:1995, units:300, tier:"4급지 10위", tcls:"tp4", str:"str4",
+  {id:"상도동 대림",   area:"동작구 상도동", year:1995, units:279, tier:"4급지 10위", tcls:"tp4", str:"str4",
    isNew:true,
    급지:18, 개발호재:11, 가격:12, 역세권:9, 세대수:3, 주거:5, 인프라:8, 학군:4,
    avgPrice:8.28, trend:"+12.7%",
    역세권text:"7호선 상도역 도보 5~7분",
    horae:{t:"상도14·15구역 재개발(4,395세대) + 서부선 경전철 추진 + 7호선→수서(GTX-A 2024 개통) 환승", g:"B"},
-   tags:["7호선 상도역 5~7분","4급지 동작구 10위","상도14·15구역 재개발","서부선 경전철 추진","★300세대 추정 소단지","복도식 추정"],
+   tags:["7호선 상도역 5~7분","4급지 동작구 10위","상도14·15구역 재개발","서부선 경전철 추진","★300세대 추정 소단지","복도식"],
    tagcls:["tbl","tgn","tgd","tpu","trd","twn"],
    pros:["동작구 4급지 10위 — 영등포(13위)보다 상위","상도14·15구역 재개발→4,395세대 낙수효과","서부선 경전철 신상도역 예정","7호선 강남(논현·학동) 직결","노량진 학원가 도보권"],
-   cons:["~300세대 소단지(세대수 최하점)","1995년 구축(30년)","재개발 낙수는 간접수혜 수준","서부선 개통 일정 불확실"]},
+   cons:["279세대 소단지(500미달 세대수 최하점)","1995년 구축(30년)","재개발 낙수는 간접수혜 수준","서부선 개통 일정 불확실"]},
 
   {id:"등촌마을서광",   area:"강서구 등촌동", year:1999, units:430, tier:"5급지 20위", tcls:"tp5b", str:"str5b",
    isNew:true,
@@ -964,8 +1528,9 @@ function renderTable(data) {
     const pc = priceClass(a.avgPrice);
     const medal = r===1?"🥇":r===2?"🥈":r===3?"🥉":"";
     const newBadge = a.isNew ? '<span class="new-badge">신규추천</span>' : "";
-    return `<tr class="${rowcls}">
+    return `<tr class="${rowcls}" id="rank-row-${a.id}">
       <td><span class="rn ${rc}">${String(r).padStart(2,"0")}</span></td>
+      <td><input type="checkbox" class="cmp-chk" data-id="${a.id}" onchange="onCmpChange(this)" style="width:14px;height:14px;cursor:pointer;accent-color:var(--gold)"></td>
       <td class="tl"><a href="#card-${a.id}" class="apt-link" onclick="scrollToCard('${a.id}')">
         <div class="anm">${medal}${a.id}${a.units<500?"★":""}${newBadge}</div>
         <div class="adt">${a.area} · ${a.year}년 · ${a.units.toLocaleString()}세대</div>
