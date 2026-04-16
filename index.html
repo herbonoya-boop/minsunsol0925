@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>서울 아파트 스코어카드 2026</title>
-<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=fe55f95ef1e4c5213286272b49b6dc8d"></script>
+<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=fe55f95ef1e4c5213286272b49b6dc8d&autoload=false"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -700,10 +700,10 @@ function initMap(){
       +'<div class="miw-bv" style="color:'+c+'">'+v+'</div></div>'
     ).join('');
     const tHtml = a.tags.map(t=>{
-      const tc = (t.includes('★')||t.includes('⚠'))?'r':(t.includes('복도식')?'w':'g');
-      return '<span class="miw-tag '+tc+'">'+t+'</span>';
+      const tagCls = (t.includes('★')||t.includes('⚠'))?'r':(t.includes('복도식')?'w':'g');
+      return '<span class="miw-tag '+tagCls+'">'+t+'</span>';
     }).join('');
-    const tc = a.trend.startsWith('+')?'#40D090':'#8090B8';
+    const trendColor = a.trend.startsWith('+')?'#40D090':'#8090B8';
 
     const iw = new kakao.maps.CustomOverlay({
       content: '<div class="miw">'
@@ -712,7 +712,7 @@ function initMap(){
         +'<div class="miw-sub">'+a.area+' · '+rank+'위/14개 단지</div>'
         +'<div class="miw-sr"><span class="miw-score" style="color:'+col.bg+'">'+a.total+'</span>'
         +'<span style="font-size:11px;color:#8090B8">총점</span>'
-        +'<span class="miw-tr" style="color:'+tc+'">'+a.trend+'</span></div>'
+        +'<span class="miw-tr" style="color:'+trendColor+'">'+a.trend+'</span></div>'
         +'<div class="miw-price">3개월 평균 <b>'+a.avg+'억</b></div>'
         +'<div class="miw-bars">'+bHtml+'</div>'
         +'<div class="miw-tags">'+tHtml+'</div>'
@@ -1007,17 +1007,10 @@ function mapFilter(btn, key){
   }
 }
 
-/* 카카오 SDK 로드 완료 후 지도 초기화 */
-if(window.kakao && window.kakao.maps){
+/* 카카오 SDK 로드 완료 후 지도 초기화 — autoload=false 방식 */
+kakao.maps.load(function(){
   initMap();
-} else {
-  window.addEventListener('load', function(){
-    var t = setInterval(function(){
-      if(window.kakao && window.kakao.maps){ clearInterval(t); initMap(); }
-    }, 100);
-    setTimeout(function(){ clearInterval(t); }, 10000);
-  });
-}
+});
 
 </script>
 
