@@ -257,6 +257,8 @@ table.ct{width:100%;border-collapse:collapse;}
       <th class="s" data-k="인프라">인프라<br><small>/10</small></th>
       <th class="s" data-k="학군">학군<br><small>/5</small></th>
       <th>3개월 평균가<br><small>(30평)</small></th>
+      <th>추정전세<br><small>전세가율</small></th>
+      <th>갭<br><small>매매-전세</small></th>
       <th class="s" data-k="total" style="min-width:108px">총점<br><small>/100</small></th>
     </tr></thead>
     <tbody id="tbody"></tbody>
@@ -355,8 +357,8 @@ const APT_LINES = {
   "삼선푸르지오":  {L4:"한성대입구역 도보 10분"},
   "신길삼성":      {L7:"신풍역 도보 7분", SIN:"보라매공원역 10분", SINA:"신풍역(2028+ 예정)"},
   "문래현대1차":   {L2:"도림천역 도보 8분", L5:"양평역 도보 11분", GTXA:"2호선→삼성(GTX-A 2026)", GTXC:"2호선→삼성(GTX-C 2028+)"},
-  "온수힐스테이트":{L1:"온수역 도보 5분", L7:"온수역 도보 5분", GTXA:"7호선→수서(GTX-A 현재)"},
-  "상도동 대림":   {L7:"상도역 도보 5~7분", GTXA:"7호선→수서(GTX-A 현재)"},
+  "온수힐스테이트":{L1:"온수역 도보 5분", L7:"온수역 도보 5분"},
+  "상도동 대림":   {L7:"상도역 도보 5~7분"},
   "등촌마을서광":  {L9:"등촌역 도보 약 10분", GTXA:"9호선→삼성(GTX-A 2026 하반기)", GTXC:"9호선→삼성(GTX-C 2028+)"},
   "가양2단지성지": {L9:"양천향교역 도보 5~9분", GTXA:"9호선→삼성(GTX-A 2026 하반기)", GTXC:"9호선→삼성(GTX-C 2028+)"},
 };
@@ -502,7 +504,7 @@ function renderLineResults(){
     <tr><td style="color:var(--c8);font-weight:600">가격 (15점)</td><td style="color:var(--green)">15pt: 3개월평균 6억↓</td><td>13pt: 6.5억 / 12pt: 7억 / 11pt: 7.5억 / 10pt: 8억</td><td>6pt: 9억 / 4pt: 9.5억↑</td><td>최고: 래미안월곡·온수 12pt / 최저: 이문e편한세상·래미안크리시엘 6~8pt</td></tr>
     <tr><td style="color:var(--c3);font-weight:600">역세권 (13점)</td><td style="color:var(--green)">13pt: 도보5분↓ 더블</td><td>11pt: 단선5분 or 8분더블 / 9pt: 단선8분 / 7pt: 단선10분</td><td>4pt: 13분↑</td><td>최고: 이문e편한세상·온수 13pt / 최저: 꿈의숲 4pt</td></tr>
     <tr><td style="color:var(--c2);font-weight:600">세대수 (11점)</td><td style="color:var(--green)">11pt: 2,000세대↑</td><td>9pt: 1,200+ / 8pt: 800+ / 6pt: 600+ / 5pt: 500+</td><td>3pt: 500세대 미만</td><td>최고: 월곡두산위브 11pt / 최저: 신길삼성·문래현대 3pt</td></tr>
-    <tr><td style="color:var(--c4);font-weight:600">주거편의 (10점)</td><td style="color:var(--green)">10pt: 2010↑ 계단식+지하주차+커뮤니티</td><td>8pt: 2003~09년 계단식</td><td>4pt: 1980년대 복도식·주차없음</td><td>최고: 온수·꿈의숲 10pt / 최저: 신길·문래 4pt</td></tr>
+    <tr><td style="color:var(--c4);font-weight:600">주거편의 (10점)</td><td style="color:var(--green)">10pt: 2010↑ 계단식+지하주차+커뮤니티+평지여부</td><td>8pt: 2003~09년 계단식·평지 / 6pt: 계단식이나 언덕</td><td>4pt: 1980년대 복도식·주차없음</td><td>최고: 온수·꿈의숲 10pt / 언덕페널티: 월곡 6pt / 최저: 신길·문래 4pt</td></tr>
     <tr><td style="color:var(--c5);font-weight:600">인프라 (10점)</td><td style="color:var(--green)">10pt: 대형마트+백화점+종합병원+상업지구</td><td>9pt: 마트+상권 / 8pt: 소규모상권</td><td>7pt: 인프라 취약</td><td>최고: 이문e편한세상 10pt / 최저: 상도대림 7pt</td></tr>
     <tr><td style="color:var(--c6);font-weight:600">학군 (5점)</td><td style="color:var(--green)">5pt: 초중고 도보+학원가</td><td>4pt: 초등 도보+중학교 양호</td><td>3pt: 고교 외곽배정</td><td>최고: 래미안크리시엘 5pt / 최저: 문래현대·온수 3pt</td></tr>
   </table>
@@ -519,6 +521,128 @@ function renderLineResults(){
   · <b>서울 전역 토지거래허가구역(~2026.12.31) · LTV 40% · 실거주 2년 의무.</b>
 </div>
 
+
+<!-- ===== 임장 노트 섹션 ===== -->
+<div style="margin-top:20px;" id="jangNoteSection">
+  <button onclick="toggleJangNote()" id="jangNoteBtn"
+    style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:13px 18px;background:var(--s2);border:1px solid var(--bd);border-radius:10px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:border-color .15s;"
+    onmouseover="this.style.borderColor='#60A0FF'" onmouseout="this.style.borderColor='var(--bd)'">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:18px;">📝</span>
+      <div style="text-align:left;">
+        <div style="font-size:13px;font-weight:700;color:#DDE2F0;">나의 임장 노트</div>
+        <div style="font-size:11px;color:var(--mu);margin-top:1px;">2025.04 직접 방문 기록 — 5개 단지</div>
+      </div>
+    </div>
+    <svg id="jangNoteArrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8090B8" stroke-width="2.5" style="transition:transform .2s;flex-shrink:0;"><polyline points="6,9 12,15 18,9"/></svg>
+  </button>
+
+  <div id="jangNoteBody" style="display:none;margin-top:8px;border:1px solid var(--bd);border-radius:10px;overflow:hidden;">
+
+    <!-- 이문e편한세상 -->
+    <div style="padding:14px 18px;border-bottom:1px solid var(--bd);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;background:rgba(176,112,255,.15);color:#B070FF;padding:2px 8px;border-radius:6px;">5급지</span>
+        <span style="font-size:14px;font-weight:700;color:#DDE2F0;">이문e편한세상</span>
+        <span style="font-size:11px;color:var(--green);font-weight:600;margin-left:auto;">유지 ✓</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+        <div style="background:rgba(64,208,144,.06);border:1px solid rgba(64,208,144,.2);border-radius:6px;padding:7px 10px;">
+          <div style="font-size:9px;color:var(--green);font-weight:700;margin-bottom:3px;">장점</div>
+          <div style="font-size:11px;color:#B0BCD8;line-height:1.6;">단지 크고 평지<br>관리 상태 양호</div>
+        </div>
+        <div style="background:rgba(255,100,112,.06);border:1px solid rgba(255,100,112,.2);border-radius:6px;padding:7px 10px;">
+          <div style="font-size:9px;color:var(--red);font-weight:700;margin-bottom:3px;">단점</div>
+          <div style="font-size:11px;color:#B0BCD8;line-height:1.6;">주변 인프라·교통 아쉬움<br>길이 좁음</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--mu);background:var(--s2);padding:6px 10px;border-radius:5px;">💬 매수 검토 유지 — 급매 타이밍 노려볼 것</div>
+    </div>
+
+    <!-- 월곡두산위브 -->
+    <div style="padding:14px 18px;border-bottom:1px solid var(--bd);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;background:rgba(144,112,200,.15);color:#9070C8;padding:2px 8px;border-radius:6px;">5급지</span>
+        <span style="font-size:14px;font-weight:700;color:#DDE2F0;">월곡두산위브</span>
+        <span style="font-size:11px;color:var(--green);font-weight:600;margin-left:auto;">유지 ✓</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+        <div style="background:rgba(64,208,144,.06);border:1px solid rgba(64,208,144,.2);border-radius:6px;padding:7px 10px;">
+          <div style="font-size:9px;color:var(--green);font-weight:700;margin-bottom:3px;">장점</div>
+          <div style="font-size:11px;color:#B0BCD8;line-height:1.6;">2,197세대 대단지<br>6호선 역세권</div>
+        </div>
+        <div style="background:rgba(255,100,112,.06);border:1px solid rgba(255,100,112,.2);border-radius:6px;padding:7px 10px;">
+          <div style="font-size:9px;color:var(--red);font-weight:700;margin-bottom:3px;">단점</div>
+          <div style="font-size:11px;color:#B0BCD8;line-height:1.6;">앞동·뒷동 언덕 심각<br>산중 아파트 느낌</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#FFA040;background:rgba(255,160,64,.06);border:1px solid rgba(255,160,64,.2);padding:6px 10px;border-radius:5px;">⚠ 계약 전 반드시 희망 동의 경사·언덕 직접 확인 필수</div>
+    </div>
+
+    <!-- 이문현대 -->
+    <div style="padding:14px 18px;border-bottom:1px solid var(--bd);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;background:rgba(176,112,255,.15);color:#B070FF;padding:2px 8px;border-radius:6px;">5급지</span>
+        <span style="font-size:14px;font-weight:700;color:#DDE2F0;">이문현대</span>
+        <span style="font-size:11px;color:var(--green);font-weight:600;margin-left:auto;">유지 ✓</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+        <div style="background:rgba(64,208,144,.06);border:1px solid rgba(64,208,144,.2);border-radius:6px;padding:7px 10px;">
+          <div style="font-size:9px;color:var(--green);font-weight:700;margin-bottom:3px;">장점</div>
+          <div style="font-size:11px;color:#B0BCD8;line-height:1.6;">운동 환경 좋음<br>조용한 주거 환경</div>
+        </div>
+        <div style="background:rgba(255,100,112,.06);border:1px solid rgba(255,100,112,.2);border-radius:6px;padding:7px 10px;">
+          <div style="font-size:9px;color:var(--red);font-weight:700;margin-bottom:3px;">단점</div>
+          <div style="font-size:11px;color:#B0BCD8;line-height:1.6;">오래된 소규모 구축<br>주차 좁음, 외식 불편</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--mu);background:var(--s2);padding:6px 10px;border-radius:5px;">💬 발전 가능성 낮지만 가격 메리트 — 실거주 불편 감안 필요</div>
+    </div>
+
+    <!-- 래미안월곡 -->
+    <div style="padding:14px 18px;border-bottom:1px solid var(--bd);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;background:rgba(144,112,200,.15);color:#9070C8;padding:2px 8px;border-radius:6px;">5급지</span>
+        <span style="font-size:14px;font-weight:700;color:#DDE2F0;">래미안월곡</span>
+        <span style="font-size:11px;color:var(--green);font-weight:600;margin-left:auto;">유지 ✓</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+        <div style="background:rgba(64,208,144,.06);border:1px solid rgba(64,208,144,.2);border-radius:6px;padding:7px 10px;">
+          <div style="font-size:9px;color:var(--green);font-weight:700;margin-bottom:3px;">장점</div>
+          <div style="font-size:11px;color:#B0BCD8;line-height:1.6;">평지, 신축 느낌<br>초등학교 단지 내 인접</div>
+        </div>
+        <div style="background:rgba(255,100,112,.06);border:1px solid rgba(255,100,112,.2);border-radius:6px;padding:7px 10px;">
+          <div style="font-size:9px;color:var(--red);font-weight:700;margin-bottom:3px;">단점</div>
+          <div style="font-size:11px;color:#B0BCD8;line-height:1.6;">역 거리 멀음<br>동북선 전까지 교통 빡셈</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--mu);background:var(--s2);padding:6px 10px;border-radius:5px;">💬 동북선 개통(2027) 후 교통 문제 해소 기대 — 선매수 전략 고려 가능</div>
+    </div>
+
+    <!-- 삼선푸르지오 (제외) -->
+    <div style="padding:14px 18px;opacity:0.5;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;background:rgba(128,128,128,.15);color:#8090A8;padding:2px 8px;border-radius:6px;">5급지</span>
+        <span style="font-size:14px;font-weight:700;color:#8090A8;text-decoration:line-through;">삼선푸르지오</span>
+        <span style="font-size:11px;color:var(--red);font-weight:600;margin-left:auto;">제외 ✕</span>
+      </div>
+      <div style="font-size:11px;color:#8090A8;background:rgba(128,128,128,.06);border:1px solid rgba(128,128,128,.2);padding:8px 10px;border-radius:6px;">
+        언덕이 너무 심하고 아파트 노후화 — 실거주 부적합 판단으로 분석 목록에서 제외
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function toggleJangNote(){
+  const body = document.getElementById('jangNoteBody');
+  const arrow = document.getElementById('jangNoteArrow');
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+</script>
 <!-- ===== 지도 섹션 ===== -->
 <div style="margin-top:28px;" id="mapSection">
   <div class="section-lbl" style="margin-bottom:12px;">단지 위치 지도 — 마커 클릭 시 상세 정보</div>
@@ -599,7 +723,7 @@ const _mapData = [
    급지:12,개발:12,가격:11,역세권:5,세대:9,주거:8,인프라:10,학군:4,
    avg:8.77, trend:"+5.6%", tags:["동북선 신미아역 255m","4호선 12분(현재)","1,372세대 래미안"]},
   {id:"신길삼성",       area:"영등포구 신길동",  lat:37.50912, lng:126.91829, fk:"4",
-   급지:18,개발:13,가격:11,역세권:11,세대:3,주거:4,인프라:10,학군:4,
+   급지:18,개발:12,가격:11,역세권:11,세대:3,주거:4,인프라:10,학군:4,
    avg:8.42, trend:"+26.6%", tags:["7호선 신풍역 7분","4급지 최고","신안산선 GTX"]},
   {id:"래미안크리시엘", area:"성북구 종암동",    lat:37.59284, lng:127.03195, fk:"5b",
    급지:12,개발:12,가격:8,역세권:9,세대:9,주거:8,인프라:10,학군:5,
@@ -608,11 +732,11 @@ const _mapData = [
    급지:12,개발:5,가격:12,역세권:7,세대:8,주거:9,인프라:9,학군:5,
    avg:9.10, trend:"+8.7%", tags:["4호선 한성대입구 10분","5.81억 최저","도심접근"]},
   {id:"문래현대1차",    area:"영등포구 문래동",  lat:37.52041, lng:126.89672, fk:"4",
-   급지:18,개발:14,가격:11,역세권:11,세대:3,주거:4,인프라:9,학군:3,
-   avg:8.34, trend:"+14.5%", tags:["2호선 도림천역 8분","통합리모델링","GTX-A·C 삼성환승"]},
+   급지:18,개발:12,가격:11,역세권:11,세대:3,주거:4,인프라:9,학군:3,
+   avg:8.34, trend:"+14.5%", tags:["2호선 도림천역 8분","통합리모델링","2호선→삼성(장거리)","2호선→삼성(장거리)"]},
   {id:"온수힐스테이트", area:"구로구 온수동",    lat:37.49208, lng:126.84842, fk:"6",
-   급지:8,개발:5,가격:12,역세권:13,세대:9,주거:10,인프라:8,학군:3,
-   avg:7.85, trend:"+1.0%", tags:["1·7호선 온수역 5분","999세대","GTX-A 수서환승"]},
+   급지:8,개발:4,가격:12,역세권:13,세대:9,주거:10,인프라:8,학군:3,
+   avg:7.85, trend:"+1.0%", tags:["1·7호선 온수역 5분","999세대","서부선 경전철 예정"]},
   {id:"종암래미안세레니티",area:"성북구 종암동", lat:37.58905, lng:127.02975, fk:"5b",
    급지:12,개발:12,가격:3,역세권:7,세대:9,주거:9,인프라:9,학군:5,
    avg:9.94, trend:"+2.6%", tags:["동북선 종암경찰서역 수혜","⚠평균 9.94억","62건 최다"]},
@@ -620,7 +744,7 @@ const _mapData = [
    급지:12,개발:12,가격:10,역세권:4,세대:7,주거:10,인프라:8,학군:4,
    avg:8.47, trend:"+8.4%", tags:["동북선 신미아역 직접수혜","4호선 13분(현재)","꿈의숲"]},
   {id:"상도동 대림",    area:"동작구 상도동",    lat:37.49834, lng:126.94328, fk:"4",
-   급지:18,개발:11,가격:12,역세권:9,세대:3,주거:5,인프라:8,학군:4,
+   급지:18,개발:10,가격:12,역세권:9,세대:3,주거:5,인프라:8,학군:4,
    avg:8.28, trend:"+12.7%", tags:["7호선 상도역 5~7분","4급지 동작","GTX-A 수서환승"]},
   {id:"등촌마을서광",   area:"강서구 등촌동",    lat:37.56248, lng:126.86083, fk:"5b",
    급지:12,개발:8,가격:8,역세권:7,세대:3,주거:7,인프라:8,학군:4,
@@ -1346,30 +1470,33 @@ function generateInvestComment(list){
 <script>
 const apts = [
   {id:"이문e편한세상",  area:"동대문구 이문동", year:2003, units:1378, tier:"5급지 18위", tcls:"tp5a", str:"str5a",
-   급지:15, 개발호재:18, 가격:6, 역세권:13, 세대수:11, 주거:8, 인프라:10, 학군:4,
+   급지:15, 개발호재:15, 가격:6, 역세권:13, 세대수:11, 주거:8, 인프라:10, 학군:4,
    avgPrice:9.31, trend:"보합",
+   jRate:62, jPrice:5.77, gap:3.54, navUrl:"https://new.land.naver.com/complexes?ms=37.58953,127.05889,18&a=APT&b=A1&e=RETAIL",
    역세권text:"1호선 신이문역 3분+6호선 돌곶이역 5분",
-   horae:{t:"동북선 2027.11 공사중 + 이문뉴타운 + 동부간선 지하화 + 홍릉바이오단지", g:"A"},
-   tags:["1호선 신이문역 3분","6호선 돌곶이역 5분","더블역세권","동북선 2027 공사중","이문뉴타운+홍릉바이오","계단식"],
+   horae:{t:"이문뉴타운 완성(1만4천세대·이문4구역 2027착공) + 홍릉바이오클러스터 + 동부간선 지하화. ※동북선은 신이문역 미정차 — 직접수혜 없음", g:"A"},
+   tags:["1호선 신이문역 3분","6호선 돌곶이역 5분","더블역세권","이문4구역 2027착공","이문뉴타운+홍릉바이오","계단식"],
    tagcls:["tbl","tbl","tgn","tpu","tgd","tgn"],
-   pros:["더블역세권 만점 — 1·6호선 3·5분","동대문구 18위(성북 24위보다 6계단 상위)","이문뉴타운+동북선+동부간선 3중 호재","코스트코·경희의료원 도보권"],
-   cons:["3개월 평균 9.31억 → 10억 목전","2003년 구축·지하주차 동간 미연결","강남 직결 없음(1호선)"]},
+   pros:["더블역세권 만점 — 1·6호선 3·5분","이문뉴타운 1만4천세대 완성 — 동북권 최대 미니신도시","이문4구역 2027착공·2030완공으로 주변 환경 완성","코스트코·경희의료원 도보권"],
+   cons:["3개월 평균 9.31억 → 예산 최상단(급매 아니면 10억 초과)","2003년 구축·주차 세대당 1.1~1.2대 부족","이문4구역 착공(2026~2027) 공사소음 2~3년","동북선 신이문역 미정차 — 직접 교통 호재 없음","개발호재 이미 9.31억에 상당부분 반영"]},
 
   {id:"월곡두산위브",  area:"성북구 하월곡동", year:2003, units:2197, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
-   급지:12, 개발호재:14, 가격:11, 역세권:13, 세대수:11, 주거:8, 인프라:10, 학군:4,
+   급지:12, 개발호재:10, 가격:11, 역세권:13, 세대수:11, 주거:6, 인프라:10, 학군:4,
    avgPrice:8.44, trend:"+9.2%",
+   jRate:61, jPrice:5.15, gap:3.29, navUrl:"https://new.land.naver.com/complexes?ms=37.60681,127.02828,18&a=APT&b=A1&e=RETAIL",
    역세권text:"6호선 월곡역 5분",
-   horae:{t:"동북선 2027.11 공사중 → 왕십리 환승", g:"B"},
-   tags:["6호선 월곡역 5분","2,197세대 최대","59건 유동성1위","홈플러스 연결통로","동북선 왕십리환승 2027","계단식"],
-   tagcls:["tbl","tgn","tgn","tgd","tpu","tgn"],
-   pros:["2,197세대 세대수 만점","59건 거래 유동성 압도적 1위","월곡역 5분+홈플러스 연결통로","동북선 왕십리 환승 → 강남 접근↑"],
-   cons:["성북구 24위(동대문·영등포보다 하위)","6호선 단일노선(강남 직결 없음)","동북선 2027 전까지 호재 대기"]},
+   horae:{t:"동북선 미정차역 — 월곡역은 동북선 노선 외. 가장 가까운 동북선 역(고려대역·미아사거리역)까지 도보 15~20분으로 직접수혜 없음", g:"C"},
+   tags:["6호선 월곡역 5분","2,197세대 최대","59건 유동성1위","홈플러스 연결통로","동북선 미정차","계단식"],
+   tagcls:["tbl","tgn","tgn","tgd","tgr","tgn"],
+   pros:["2,197세대 세대수 만점","59건 거래 유동성 압도적 1위","월곡역 5분+홈플러스 연결통로","8.44억 — 예산 여유+대단지"],
+   cons:["언덕 심각 — 역·단지 진입로 경사 급함(임장 확인)","동북선 미정차 — 직접 교통호재 없음","성북구 24위(동대문·영등포보다 하위)","6호선 단일노선(강남 직결 없음)","개발호재 약함"]},
 
   {id:"이문현대",     area:"동대문구 이문동", year:2000, units:601, tier:"5급지 18위", tcls:"tp5a", str:"str5a",
-   급지:15, 개발호재:15, 가격:11, 역세권:11, 세대수:6, 주거:6, 인프라:9, 학군:4,
+   급지:15, 개발호재:13, 가격:11, 역세권:11, 세대수:6, 주거:6, 인프라:9, 학군:4,
    avgPrice:8.12, trend:"+4.0%",
+   jRate:62, jPrice:5.03, gap:3.09, navUrl:"https://new.land.naver.com/complexes?ms=37.58801,127.05710,18&a=APT&b=A1&e=RETAIL",
    역세권text:"1호선 신이문역 5분",
-   horae:{t:"동북선 2027.11 공사중 + 이문뉴타운 + 동부간선 지하화 + 1호선→청량리(GTX-B·C 간접)", g:"B"},
+   horae:{t:"이문뉴타운 1만4천세대 완성(이문4구역 2027착공) + 동부간선 지하화. ※동북선 신이문역 미정차", g:"B"},
    tags:["1호선 신이문역 5분","5급지 18위 동대문구","이문뉴타운·동북선","7.08억 최저 진입","복도식"],
    tagcls:["tbl","tgn","tpu","tgd","twn"],
    pros:["이문e편한세상 대비 ~1억 저렴","동대문구 18위 동일 급지·생활권","7.08억 저층 실거래 확인"],
@@ -1378,6 +1505,7 @@ const apts = [
   {id:"래미안월곡",   area:"성북구 하월곡동", year:2006, units:1372, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
    급지:12, 개발호재:12, 가격:11, 역세권:5, 세대수:9, 주거:8, 인프라:10, 학군:4,
    avgPrice:8.77, trend:"+5.6%",
+   jRate:61, jPrice:5.35, gap:3.42, navUrl:"https://new.land.naver.com/complexes?ms=37.60487,127.03039,18&a=APT&b=A1&e=RETAIL",
    역세권text:"4호선 미아사거리역 약 12분",
    horae:{t:"동북선 신미아역 단지 바로 앞 255m(1분 거리) — 2027.11 개통 목표. 가장 직접적인 동북선 수혜단지", g:"A"},
    tags:["4호선 미아사거리역 약 12분","동북선 신미아역 255m 앞","1,372세대 래미안","6.0억 저층 진입","지하주차 연결","계단식"],
@@ -1386,10 +1514,11 @@ const apts = [
    cons:["현재 역세권 취약 — 4호선 12분(월곡역 6호선은 실제 더 멀어 오류 정정)","동북선 개통 전(2027)까지는 교통 불편","3개월 평균 8.77억으로 상승 중"]},
 
   {id:"신길삼성",     area:"영등포구 신길동", year:1984, units:384, tier:"4급지 13위", tcls:"tp4", str:"str4",
-   급지:18, 개발호재:13, 가격:11, 역세권:11, 세대수:3, 주거:4, 인프라:10, 학군:4,
+   급지:18, 개발호재:12, 가격:11, 역세권:11, 세대수:3, 주거:4, 인프라:10, 학군:4,
    avgPrice:8.42, trend:"+26.6%",
+   jRate:55, jPrice:4.63, gap:3.79, navUrl:"https://new.land.naver.com/complexes?ms=37.50912,126.91829,18&a=APT&b=A1&e=RETAIL",
    역세권text:"7호선 신풍역 7분+신림선 보라매공원역 10분",
-   horae:{t:"신안산선 2028년↑ 연기(붕괴사고) + 재건축 조합 진행중. 신안산선→GTX-A 서울역·수서 환승 가능(장기)", g:"B"},
+   horae:{t:"신안산선 2028년↑ 연기(붕괴사고) + 재건축 조합 진행중. GTX는 미개통 신안산선→GTX 이중예정으로 사실상 2030년 이후", g:"B"},
    tags:["7호선 신풍역 7분","신림선 더블역세권","4급지 영등포 최고","신안산선 2028년↑ 재연기","재건축 조합 진행중","★500세대 미달","복도식"],
    tagcls:["tbl","tbl","tgn","twn","twn","trd","twn"],
    pros:["영등포 4급지 — 분석 최상위 급지","전년比 +26.6% — 분석 최고 상승률","신안산선 개통 후 여의도 3정거장","재건축 완공 후 569세대"],
@@ -1398,6 +1527,7 @@ const apts = [
   {id:"래미안크리시엘", area:"성북구 종암동", year:2003, units:1168, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
    급지:12, 개발호재:12, 가격:8, 역세권:9, 세대수:9, 주거:8, 인프라:10, 학군:5,
    avgPrice:9.09, trend:"+6.8%",
+   jRate:61, jPrice:5.54, gap:3.55, navUrl:"https://new.land.naver.com/complexes?ms=37.59284,127.03195,18&a=APT&b=A1&e=RETAIL",
    역세권text:"6호선 고려대역 8분",
    horae:{t:"동북선 106역 종암경찰서역 직접수혜 (문서 명시)", g:"B"},
    tags:["6호선 고려대역 8분","동북선 종암경찰서역 직접수혜","1,168세대 래미안","학군 최고(5/5)","계단식"],
@@ -1405,9 +1535,10 @@ const apts = [
    pros:["학군 만점 — 고려대·사대부중고 도보","동북선 106역 종암경찰서역 직접수혜(문서 명시)","1,168세대 래미안 브랜드"],
    cons:["3개월 평균 9.09억 → 10억 근접","26건 거래 유동성 낮음"]},
 
-  {id:"삼선푸르지오",  area:"성북구 삼선동2가", year:2008, units:864, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
+  {id:"삼선푸르지오",  area:"성북구 삼선동2가", excluded:true, excludeReason:"임장결과 제외 — 언덕이 너무 심하고 단지 노후화", year:2008, units:864, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
    급지:12, 개발호재:5, 가격:12, 역세권:7, 세대수:8, 주거:9, 인프라:9, 학군:5,
    avgPrice:9.10, trend:"+8.7%",
+   jRate:61, jPrice:5.55, gap:3.55, navUrl:"https://new.land.naver.com/complexes?ms=37.58482,127.01415,18&a=APT&b=A1&e=RETAIL",
    역세권text:"4호선 한성대입구역 10분",
    horae:{t:"뚜렷한 개발호재 없음", g:"D"},
    tags:["4호선 한성대입구역 10분","864세대 2008년","5.81억 최저 진입가","종로·광화문 직접","가격 등락 폭 큼","계단식"],
@@ -1416,28 +1547,31 @@ const apts = [
    cons:["역세권 취약(10분 단일노선)","26Q1 9.67억 급등 → 10억 목전","분기별 가격 등락 폭 최대"]},
 
   {id:"문래현대1차",  area:"영등포구 문래동6가", year:1986, units:264, tier:"4급지 13위", tcls:"tp4", str:"str4",
-   급지:18, 개발호재:14, 가격:11, 역세권:11, 세대수:3, 주거:4, 인프라:9, 학군:3,
+   급지:18, 개발호재:12, 가격:11, 역세권:11, 세대수:3, 주거:4, 인프라:9, 학군:3,
    avgPrice:8.34, trend:"+14.5%",
+   jRate:55, jPrice:4.59, gap:3.75, navUrl:"https://new.land.naver.com/complexes?ms=37.52041,126.89672,18&a=APT&b=A1&e=RETAIL",
    역세권text:"2호선 도림천역 8분+5호선 양평역 11분",
-   horae:{t:"7개단지 통합리모델링 추진 + 문래동4가 재개발 + 2호선→삼성(GTX-A·C 2026+ 환승)", g:"A"},
-   tags:["2호선 도림천역 8분","5호선 양평역 11분","4급지 영등포 최고","통합리모델링 1,973세대","문래4가 재개발","★500세대 미달","복도식"],
+   horae:{t:"7개단지 통합리모델링 추진 + 문래동4가 재개발. 2호선→삼성 15정거장(GTX 환승 가능하나 30분↑ 장거리)", g:"B"},
+   tags:["2호선 도림천역 8분","5호선 양평역 11분","4급지 영등포 최고","통합리모델링 1,973세대","문래4가 재개발","2호선→삼성(15정거장·장거리)","복도식"],
    tagcls:["tbl","tbl","tgn","tgd","tgd","trd","twn"],
    pros:["영등포 4급지 최상위 급지","7개단지 통합리모델링→2,000세대 기대","문래동4가 재개발+목동학원가 인접","+14.5% 상승"],
    cons:["264세대 — 500미달 최하점","1986년 구축·준공업지역 인접","리모델링 인허가 수년 소요"]},
 
   {id:"온수힐스테이트", area:"구로구 온수동", year:2010, units:999, tier:"6급지 29위", tcls:"tp6", str:"str6",
-   급지:8, 개발호재:5, 가격:12, 역세권:13, 세대수:9, 주거:10, 인프라:8, 학군:3,
+   급지:8, 개발호재:14, 가격:12, 역세권:13, 세대수:9, 주거:10, 인프라:5, 학군:3,
    avgPrice:7.85, trend:"+1.0%",
+   jRate:63, jPrice:4.95, gap:2.9, navUrl:"https://new.land.naver.com/complexes?ms=37.49208,126.84842,18&a=APT&b=A1&e=RETAIL",
    역세권text:"1호선+7호선 온수역 5분",
-   horae:{t:"7호선→수서(GTX-A 2024 개통, 이용가능) 환승 가능. 수서까지 약 20정거장", g:"D+"},
-   tags:["1호선+7호선 온수역 5분","더블역세권","999세대 2010년 힐스테이트","7호선→수서 GTX-A 환승","6급지 최하","계단식"],
-   tagcls:["tbl","tgn","tgn","tgd","tgr","tgn"],
-   pros:["1·7호선 더블역세권 5분 — 역세권 최고","2010년 준신축+힐스테이트+지하주차","7.85억 평균 — 예산 여유"],
-   cons:["6급지 29위 — 분석 최하 급지","+1.0% 사실상 보합","개발호재 없음"]},
+   horae:{t:"럭비구장 복합개발 — 온수역 바로앞 43층 2,071세대+공원+상업 2026 착공·2030 준공 확정(사업계획승인 2025.7 완료). 주변 연립 다수 재건축 추진 중", g:"A"},
+   tags:["1호선+7호선 온수역 5분","더블역세권","999세대 2010년 힐스테이트","럭비구장복합개발 2026착공","온수역앞 43층2071세대","계단식"],
+   tagcls:["tbl","tgn","tgn","tpu","tpu","tgn"],
+   pros:["1·7호선 더블역세권 5분 — 역세권 최고","럭비구장 2026착공·2030준공 — 온수역앞 2,071세대 대단지 확정","2010년 준신축+힐스테이트+지하주차","7.85억 — 이문e편한세상 대비 1.5억 저렴, 호재 가성비 최고"],
+   cons:["주변 인프라 심각 부족 — 역~단지 어둡고 폐허 빌라촌(임장 확인)","외식·쇼핑 역곡까지 이동 필요","6급지 29위 — 분석 최하 급지","럭비구장 완공(2030)까지 4년간 공사 소음·분진","3살 아이 동반 실거주 현재 환경 부적합"]},
 
   {id:"종암래미안세레니티",area:"성북구 종암동", year:2009, units:955, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
    급지:12, 개발호재:12, 가격:3, 역세권:7, 세대수:9, 주거:9, 인프라:9, 학군:5,
    avgPrice:9.94, trend:"+2.6%",
+   jRate:61, jPrice:6.06, gap:3.88, navUrl:"https://new.land.naver.com/complexes?ms=37.58905,127.02975,18&a=APT&b=A1&e=RETAIL",
    역세권text:"6호선 고려대역 10분",
    horae:{t:"동북선 106역 종암경찰서역 직접수혜 (문서 명시). 세대수 955세대 정정", g:"B"},
    tags:["6호선 고려대역 10분","동북선 종암경찰서역 직접수혜","955세대 2009년 래미안","62건 최다 거래","⚠3개월평균 9.94억"],
@@ -1448,6 +1582,7 @@ const apts = [
   {id:"꿈의숲푸르지오", area:"성북구 하월곡동", year:2010, units:714, tier:"5급지 24위", tcls:"tp5b", str:"str5b",
    급지:12, 개발호재:12, 가격:10, 역세권:4, 세대수:7, 주거:10, 인프라:8, 학군:4,
    avgPrice:8.47, trend:"+8.4%",
+   jRate:61, jPrice:5.17, gap:3.3, navUrl:"https://new.land.naver.com/complexes?ms=37.61389,127.02717,18&a=APT&b=A1&e=RETAIL",
    역세권text:"4호선 미아사거리역 13분",
    horae:{t:"동북선 108역 신미아역 직접수혜 — 래미안월곡과 동일 역세권(문서 명시)", g:"B"},
    tags:["4호선 미아사거리역 13분","동북선 신미아역 직접수혜","714세대 2010년","꿈의숲 공원 인접","계단식"],
@@ -1457,10 +1592,11 @@ const apts = [
 
   {id:"상도동 대림",   area:"동작구 상도동", year:1995, units:279, tier:"4급지 10위", tcls:"tp4", str:"str4",
    isNew:true,
-   급지:18, 개발호재:11, 가격:12, 역세권:9, 세대수:3, 주거:5, 인프라:8, 학군:4,
+   급지:18, 개발호재:10, 가격:12, 역세권:9, 세대수:3, 주거:5, 인프라:8, 학군:4,
    avgPrice:8.28, trend:"+12.7%",
+   jRate:56, jPrice:4.64, gap:3.64, navUrl:"https://new.land.naver.com/complexes?ms=37.49834,126.94328,18&a=APT&b=A1&e=RETAIL",
    역세권text:"7호선 상도역 도보 5~7분",
-   horae:{t:"상도14·15구역 재개발(4,395세대) + 서부선 경전철 추진 + 7호선→수서(GTX-A 2024 개통) 환승", g:"B"},
+   horae:{t:"상도14·15구역 재개발(4,395세대) + 서부선 경전철 추진. 7호선→고속터미널 환승→3호선→수서(GTX-A) 2회 환승 약 40분", g:"B"},
    tags:["7호선 상도역 5~7분","4급지 동작구 10위","상도14·15구역 재개발","서부선 경전철 추진","★300세대 추정 소단지","복도식"],
    tagcls:["tbl","tgn","tgd","tpu","trd","twn"],
    pros:["동작구 4급지 10위 — 영등포(13위)보다 상위","상도14·15구역 재개발→4,395세대 낙수효과","서부선 경전철 신상도역 예정","7호선 강남(논현·학동) 직결","노량진 학원가 도보권"],
@@ -1470,6 +1606,7 @@ const apts = [
    isNew:true,
    급지:12, 개발호재:8, 가격:8, 역세권:7, 세대수:3, 주거:7, 인프라:8, 학군:4,
    avgPrice:8.96, trend:"+9.1%",
+   jRate:58, jPrice:5.2, gap:3.76, navUrl:"https://new.land.naver.com/complexes?ms=37.56248,126.86083,18&a=APT&b=A1&e=RETAIL",
    역세권text:"9호선 등촌역 도보 약 10분",
    horae:{t:"9호선→삼성(GTX-A·C 2026 하반기 예정) 급행 약 15분. 9호선 라인 GTX 수혜 최대 단지", g:"B"},
    tags:["9호선 등촌역 약 10분","9호선→삼성 GTX-A·C 환승","마곡지구 인접","430세대★500미만","1999년 계단식"],
@@ -1481,12 +1618,36 @@ const apts = [
    isNew:true,
    급지:12, 개발호재:10, 가격:6, 역세권:9, 세대수:11, 주거:4, 인프라:7, 학군:4,
    avgPrice:9.70, trend:"+16.2%",
+   jRate:58, jPrice:5.63, gap:4.07, navUrl:"https://new.land.naver.com/complexes?ms=37.56451,126.85382,18&a=APT&b=A1&e=RETAIL",
    역세권text:"9호선 양천향교역 도보 5~9분",
    horae:{t:"9호선→삼성(GTX-A·C 2026 하반기 예정) 급행 약 18분 + 인근 3·6단지 재건축 추진", g:"B"},
    tags:["9호선 양천향교역 5~9분","9호선→삼성 GTX-A·C 환승","1,624세대 대단지","인근 3·6단지 재건축","⚠30평대 실거래 추정치"],
    tagcls:["tbl","tgd","tgn","tpu","trd"],
    pros:["1,624세대 대단지 — 세대수 만점","인근 가양3·6단지 재건축 추진→생활권 개선 기대","부동산뱅크 기준 1년간 +16.2%","9호선 양천향교역 도보권"],
    cons:["30평대 실거래 데이터 없음(평당 환산 약 9.7억 추정, 직접 확인 필수)","1992년 복도식 구축·주차 0.54대/세대 부족","2단지 재건축은 아직 초기(직접 해당 아님)","강서구 서쪽 끝 입지(강남 접근 원거리)"]}
+,
+
+  {id:"꿈의숲대명루첸", area:"성북구 장위동", year:2008, units:611, tier:"5급지 하위", tcls:"tp5b", str:"str5b",
+   급지:10, 개발호재:14, 가격:12, 역세권:4, 세대수:6, 주거:8, 인프라:7, 학군:3,
+   avgPrice:7.70, trend:"+0.5%",
+   jRate:61, jPrice:4.70, gap:3.00, navUrl:"https://new.land.naver.com/complexes?ms=37.61389,127.02717,18&a=APT&b=A1&e=RETAIL",
+   역세권text:"지하철 없음 (동북선 개통 전)",
+   horae:{t:"동북선 2027.11 개통목표(공정률 68%) — 북서울꿈의숲역 도보 5~8분 예정. 장위뉴타운 인접. 단 동북선 2차 연기 전례 있음", g:"B"},
+   tags:["북서울꿈의숲 조망","동북선 2027 수혜예정","611세대 2008년","지하철 없음(현재)","계단식","주차1.31대"],
+   tagcls:["tgn","tpu","tgn","tgr","tgn","tgn"],
+   pros:["7.70억 — 분석단지 중 저렴","북서울꿈의숲 바로앞 조망+산책","동북선 개통후 역세권 편입(도보5~8분)","소호대출 만기(2027.3) 대비 예비금 확보 가능"],
+   cons:["현재 지하철 없음 — 버스만","동북선 개통까지 1.5년 출퇴근 불편","611세대 소규모","동북선 호재 상당부분 이미 반영 가능성"]},
+
+  {id:"구로주공1차", area:"구로구 구로동", year:1986, units:1400, tier:"6급지", tcls:"tp6", str:"str6",
+   급지:8, 개발호재:16, 가격:6, 역세권:5, 세대수:9, 주거:4, 인프라:6, 학군:5,
+   avgPrice:9.10, trend:"+15%",
+   jRate:50, jPrice:4.55, gap:4.55, navUrl:"https://new.land.naver.com/complexes?ms=37.49650,126.88150,18&a=APT&b=A1&e=RETAIL",
+   역세권text:"1호선 구일역 도보 14분(육교 경유)",
+   horae:{t:"재건축 정비구역 지정 공람 2026.04 진행중 — 1·2차 통합 49층 3,289세대 예정. 용적률 329% 적용 '남는 재건축'. 차량기지 이전 호재 병행. 구일섬 단절 해소 기대", g:"A"},
+   tags:["재건축 공람진행 2026.04","49층 3289세대 예정","구일역 도보14분","구일섬 4면단절","1986년 구축","용적률329% 남는재건축"],
+   tagcls:["tpu","tpu","tgr","tgr","twn","tgn"],
+   pros:["재건축 공람 진행 — 49층 3,289세대 사업성 매우 우수","용적률 329% 준공업지역 인센티브 — 일반분양 많아 분담금 낮을 것","구일초·중·고 인접 우수학군","G밸리(구로디지털단지) 직주근접"],
+   cons:["구일역 도보 14분+육교 — 역세권 최하","구일섬 — 차량기지·서부간선·남부순환·1호선 4면 단절","1986년 구축 실거주 불편","9.1억 거래가 — 예산 최상단, 재건축 프리미엄 이미 반영","실거주 목적보다 재건축 투자 성격 강함"]}
 ];
 
 // 총점 계산
@@ -1537,6 +1698,8 @@ function renderTable(data) {
         return `<td><div class="sc"><div class="sv ${warnCls}" style="color:${c}">${v}</div><div class="sb"><div class="sbf" style="width:${w}%;background:${c}"></div></div></div></td>`;
       }).join("")}
       <td><span class="price-cell ${pc}" style="font-family:'IBM Plex Mono';font-size:12px;font-weight:600">${a.avgPrice.toFixed(2)}억</span></td>
+      <td style="text-align:center"><div style="font-family:'IBM Plex Mono';font-size:12px;font-weight:600;color:#60DDD0">${a.jPrice ? a.jPrice.toFixed(2)+'억' : '-'}</div><div style="font-size:10px;color:${a.jRate>=62?'#40D090':a.jRate>=58?'#F0C060':'#FF8098'}">${a.jRate ? a.jRate+'%' : ''}</div></td>
+      <td style="text-align:center;font-family:'IBM Plex Mono';font-size:12px;font-weight:600;color:#FFA040">${a.gap ? a.gap.toFixed(2)+'억' : '-'}</td>
       <td><div class="tw"><div class="tt"><div class="tf" style="width:${a.total}%;background:${a.total>=85?'var(--gold)':a.total>=78?'var(--silver)':a.total>=70?'var(--bronze)':'#707090'}"></div></div><span class="tn ${totalColor(a.total)}">${a.total}</span></div></td>
     </tr>`;
   }).join("");
@@ -1610,6 +1773,36 @@ function renderCards() {
       <div class="score-sec" style="padding-top:0">
         <div class="ssl">개발호재 <span class="hbadge ${hbc}" style="font-size:10px">${a.horae.g}등급</span></div>
         <div style="font-size:10px;color:var(--mu2);line-height:1.65">${a.horae.t}</div>
+      </div>
+      <!-- 전세가율 + 네이버 -->
+      <div style="padding:8px 14px;border-top:1px solid var(--bd);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;">전세가 정보 <span style="font-size:9px;color:var(--mu);font-weight:400">(KB 구별 추정)</span></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div style="background:var(--s3);border-radius:5px;padding:3px 8px;text-align:center;">
+              <div style="font-size:11px;font-weight:700;font-family:'IBM Plex Mono';color:#60DDD0">${a.jPrice ? a.jPrice.toFixed(2)+'억' : '-'}</div>
+              <div style="font-size:9px;color:var(--mu)">추정 전세가</div>
+            </div>
+            <div style="background:var(--s3);border-radius:5px;padding:3px 8px;text-align:center;">
+              <div style="font-size:11px;font-weight:700;font-family:'IBM Plex Mono';color:${a.jRate>=62?'#40D090':a.jRate>=58?'#F0C060':'#FF8098'}">${a.jRate ? a.jRate+'%' : '-'}</div>
+              <div style="font-size:9px;color:var(--mu)">전세가율</div>
+            </div>
+            <div style="background:var(--s3);border-radius:5px;padding:3px 8px;text-align:center;">
+              <div style="font-size:11px;font-weight:700;font-family:'IBM Plex Mono';color:#FFA040">${a.gap ? a.gap.toFixed(2)+'억' : '-'}</div>
+              <div style="font-size:9px;color:var(--mu)">갭(매매-전세)</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:4px;">
+          <div style="display:flex;gap:4px;">
+            <a href="${(a.navUrl||'#').replace('b=A1','b=A1')}" target="_blank" rel="noopener"
+               style="display:flex;align-items:center;gap:3px;background:#03C75A;color:#fff;font-size:10px;font-weight:700;padding:5px 9px;border-radius:6px;text-decoration:none;white-space:nowrap;font-family:'Noto Sans KR',sans-serif;"
+               onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>네이버 매물
+            </a>
+
+          </div>
+        </div>
       </div>
       <div class="card-btm">
         <div class="pro-con">
