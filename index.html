@@ -722,121 +722,10 @@ function toggleJangNote(){
 })();
 
 /* ===== 지도 데이터 (좌표 검증 완료) ===== */
-const _coordMap = {
-  "이문e편한세상":      [37.58953, 127.05889],
-  "월곡두산위브":       [37.60681, 127.02828],
-  "이문현대":           [37.58801, 127.05710],
-  "래미안월곡":         [37.60487, 127.03039],
-  "신길삼성":           [37.50912, 126.91829],
-  "래미안크리시엘":     [37.59284, 127.03195],
-  "삼선푸르지오":       [37.58482, 127.01415],
-  "문래현대1차":        [37.52041, 126.89672],
-  "온수힐스테이트":     [37.49208, 126.84842],
-  "종암래미안세레니티": [37.58905, 127.02975],
-  "꿈의숲푸르지오":     [37.61389, 127.02717],
-  "상도동 대림":        [37.49834, 126.94328],
-  "등촌마을서광":       [37.56248, 126.86083],
-  "가양2단지성지":      [37.56451, 126.85382],
-  "꿈의숲대명루첸":     [37.61200, 127.04100],
-  "구로주공1차":        [37.49650, 126.88150],
-  "e편한세상온수역":    [37.49100, 126.84900],
-  "소사푸르지오":       [37.48230, 126.80450]
-};
-_mapData = apts.map((a,i) => {
-  const c = _coordMap[a.id] || [0,0];
-  return {
-    ...a,
-    lat: c[0],
-    lng: c[1],
-    total: (a.급지+a.개발호재+a.가격+a.역세권+a.세대수+a.주거+a.인프라+a.학군),
-    fk: a.tcls
-  };
-}).filter(a => a.lat !== 0);).filter(a => a.lat !== 0);
-
-let _map = null;
-
-function initMap(){
-  if(_map) return;
-  const c = document.getElementById('leafletMap');
-  if(!c) return;
-
-  _map = L.map('leafletMap', {center:[37.555,126.965], zoom:12});
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-    attribution:'&copy; OpenStreetMap &copy; CartoDB',
-    subdomains:'abcd', maxZoom:19
-  }).addTo(_map);
-
-  // 총점 색상 함수 (로컬)
-  function scoreColor(t){
-    if(t>=80) return '#4CAF50';
-    if(t>=70) return '#8BC34A';
-    if(t>=65) return '#FFC107';
-    return '#FF5722';
-  }
-
-  _mapData.forEach((a,idx) => {
-    if(!a.lat || !a.lng) return;
-    const ring = scoreColor(a.total);
-    const rank = idx+1;
-
-    const svg = `<svg width="44" height="54" viewBox="0 0 44 54" xmlns="http://www.w3.org/2000/svg">
-      <path d="M22 2C12 2 4 10 4 20c0 13 18 32 18 32s18-19 18-32C40 10 32 2 22 2z" fill="${ring}" opacity=".95"/>
-      <circle cx="22" cy="20" r="12" fill="#0E1018"/>
-      <text x="22" y="16" text-anchor="middle" font-size="7.5" fill="#aaa" font-family="sans-serif">${rank}위</text>
-      <text x="22" y="26" text-anchor="middle" font-size="10" font-weight="bold" fill="#fff" font-family="sans-serif">${a.total}</text>
-    </svg>`;
-
-    const icon = L.divIcon({html:svg, iconSize:[44,54], iconAnchor:[22,52], popupAnchor:[0,-54], className:''});
-    const marker = L.marker([a.lat, a.lng], {icon}).addTo(_map);
-    marker.aptData = a;
-
-    const hgUrl = a.navUrl || '#';
-    const popHtml = `<div style="font-family:'Noto Sans KR',sans-serif;min-width:190px;">
-      <div style="font-weight:700;font-size:13px;margin-bottom:3px;">${a.id}</div>
-      <div style="font-size:10px;color:#888;margin-bottom:5px;">${a.area} · ${a.year}년 · ${a.units}세대</div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
-        <span style="font-size:10px;color:#aaa;">총점</span>
-        <span style="font-weight:700;color:${ring};">${a.total}점</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-        <span style="font-size:10px;color:#aaa;">평균가</span>
-        <span style="font-weight:600;font-size:11px;">${a.avgPrice}억</span>
-      </div>
-      <a href="${hgUrl}" target="_blank" rel="noopener"
-         style="display:block;text-align:center;background:#FF6600;color:#fff;font-size:11px;font-weight:700;padding:5px 0;border-radius:6px;text-decoration:none;">
-        호갱노노 매물 보기
-      </a>
-    </div>`;
-
-    marker.bindPopup(popHtml, {maxWidth:240, className:'apt-popup'});
-    marker.on('click', function(){ this.openPopup(); });
-    a._marker = marker;
-  });
-}
-
-function mapFilter(btn, key){
-  document.querySelectorAll('.map-fb').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  if(!_map) return;
-  _mapData.forEach(a => {
-    if(!a._marker) return;
-    const show = (key==='all') || (a.fk && a.fk.startsWith(key));
-    if(show) {
-      if(!_map.hasLayer(a._marker)) a._marker.addTo(_map);
-    } else {
-      if(_map.hasLayer(a._marker)) _map.removeLayer(a._marker);
-    }
-  });
-}
+const 
 
 
 
-// 총점 계산
-apts.forEach(a => {
-  a.total = a.급지+a.개발호재+a.가격+a.역세권+a.세대수+a.주거+a.인프라+a.학군;
-});
-apts.sort((a,b) => b.total-a.total);
 
 function priceClass(p) {
   if(p >= 9.5) return "p-hi";
@@ -1229,9 +1118,113 @@ const apts = [
    cons:["경기 부천 — 서울 급지 밖","소사역 도보 8분 애매","주변 외국인 밀집지역 인접","서울 접근 서해선 의존"]}
 ];
 
+// 총점 계산
+apts.forEach(a => {
+  a.total = a.급지+a.개발호재+a.가격+a.역세권+a.세대수+a.주거+a.인프라+a.학군;
+});
+apts.sort((a,b) => b.total-a.total);
 // 초기 렌더
 renderTable(apts);
 renderCards();
+
+// ===== 지도: 좌표 + Leaflet 초기화 =====
+const _coordMap = {
+  "이문e편한세상":      [37.58953, 127.05889],
+  "월곡두산위브":       [37.60681, 127.02828],
+  "이문현대":           [37.58801, 127.05710],
+  "래미안월곡":         [37.60487, 127.03039],
+  "신길삼성":           [37.50912, 126.91829],
+  "래미안크리시엘":     [37.59284, 127.03195],
+  "삼선푸르지오":       [37.58482, 127.01415],
+  "문래현대1차":        [37.52041, 126.89672],
+  "온수힐스테이트":     [37.49208, 126.84842],
+  "종암래미안세레니티": [37.58905, 127.02975],
+  "꿈의숲푸르지오":     [37.61389, 127.02717],
+  "상도동 대림":        [37.49834, 126.94328],
+  "등촌마을서광":       [37.56248, 126.86083],
+  "가양2단지성지":      [37.56451, 126.85382],
+  "꿈의숲대명루첸":     [37.61200, 127.04100],
+  "구로주공1차":        [37.49650, 126.88150],
+  "e편한세상온수역":    [37.49100, 126.84900],
+  "소사푸르지오":       [37.48230, 126.80450]
+};
+
+const _mapData = apts.map(a => {
+  const c = _coordMap[a.id] || [0,0];
+  return {...a, lat:c[0], lng:c[1], fk:a.tcls};
+}).filter(a => a.lat !== 0);
+
+let _map = null;
+
+function initMap(){
+  if(_map) return;
+  const c = document.getElementById('leafletMap');
+  if(!c) return;
+  _map = L.map('leafletMap', {center:[37.555,126.965], zoom:12});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+    attribution:'&copy; OpenStreetMap &copy; CartoDB',
+    subdomains:'abcd', maxZoom:19
+  }).addTo(_map);
+
+  function scoreColor(t){
+    if(t>=80) return '#4CAF50';
+    if(t>=70) return '#8BC34A';
+    if(t>=65) return '#FFC107';
+    return '#FF5722';
+  }
+
+  _mapData.forEach((a,idx) => {
+    if(!a.lat) return;
+    const ring = scoreColor(a.total);
+    const rank = idx+1;
+    const svg = `<svg width="44" height="54" viewBox="0 0 44 54" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22 2C12 2 4 10 4 20c0 13 18 32 18 32s18-19 18-32C40 10 32 2 22 2z" fill="${ring}" opacity=".95"/>
+      <circle cx="22" cy="20" r="12" fill="#0E1018"/>
+      <text x="22" y="16" text-anchor="middle" font-size="7.5" fill="#aaa" font-family="sans-serif">${rank}위</text>
+      <text x="22" y="26" text-anchor="middle" font-size="10" font-weight="bold" fill="#fff" font-family="sans-serif">${a.total}</text>
+    </svg>`;
+    const icon = L.divIcon({html:svg, iconSize:[44,54], iconAnchor:[22,52], popupAnchor:[0,-54], className:''});
+    const marker = L.marker([a.lat, a.lng], {icon}).addTo(_map);
+
+    const hgUrl = a.navUrl || '#';
+    const tags = (a.tags||[]).slice(0,3).map(t=>`<span style="background:#1e2235;color:#aaa;font-size:9px;padding:2px 6px;border-radius:4px;">${t}</span>`).join(' ');
+    const popHtml = `<div style="font-family:'Noto Sans KR',sans-serif;min-width:200px;max-width:230px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:2px;">${a.id}</div>
+      <div style="font-size:10px;color:#888;margin-bottom:5px;">${a.area} · ${a.year}년 · ${a.units}세대</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+        <span style="font-size:10px;color:#aaa;">총점</span>
+        <span style="font-weight:700;color:${ring};font-size:14px;">${a.total}점</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:10px;color:#aaa;">평균가</span>
+        <span style="font-weight:600;font-size:12px;">${a.avgPrice}억</span>
+      </div>
+      <div style="margin-bottom:8px;display:flex;gap:3px;flex-wrap:wrap;">${tags}</div>
+      <a href="${hgUrl}" target="_blank" rel="noopener"
+         style="display:block;text-align:center;background:#FF6600;color:#fff;font-size:11px;font-weight:700;padding:6px 0;border-radius:6px;text-decoration:none;">
+        호갱노노 매물 보기
+      </a>
+    </div>`;
+    marker.bindPopup(popHtml, {maxWidth:250, className:'apt-popup'});
+    marker.on('click', function(){ this.openPopup(); });
+    a._marker = marker;
+  });
+}
+
+function mapFilter(btn, key){
+  document.querySelectorAll('.map-fb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(!_map) return;
+  _mapData.forEach(a => {
+    if(!a._marker) return;
+    const show = (key==='all') || (a.fk && a.fk.startsWith(key));
+    if(show){ if(!_map.hasLayer(a._marker)) a._marker.addTo(_map); }
+    else { if(_map.hasLayer(a._marker)) _map.removeLayer(a._marker); }
+  });
+}
+
+// 지도 자동 실행
+setTimeout(initMap, 200);
 
 // _mapData를 apts 총점 계산 후 재생성 (순서 보장)
 (function(){
