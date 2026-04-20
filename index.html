@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>서울 아파트 스코어카드 2026</title>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -189,19 +187,7 @@ table.ct{width:100%;border-collapse:collapse;}
 .notice .fix{color:var(--green);font-weight:600;}
 .notice .alrt{color:var(--red);font-weight:600;}
 </style>
-
-<style>
-.apt-popup .leaflet-popup-content-wrapper {
-  background: #1A1D2E;
-  border: 1px solid #2A2D3E;
-  border-radius: 10px;
-  color: #e8eaf0;
-  box-shadow: 0 4px 20px rgba(0,0,0,.5);
-}
-.apt-popup .leaflet-popup-tip { background: #1A1D2E; }
-.apt-popup .leaflet-popup-close-button { color: #888; }
-.leaflet-container { background: #0E1018; }
-</style></head>
+</head>
 <body>
 <div class="page">
 
@@ -505,6 +491,217 @@ function renderLineResults(){
   <button class="scroll-btn rgt" onclick="scrollCards(1)"><svg viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></button>
 </div>
 
+<!-- ===== 뉴스·커뮤니티 섹션 ===== -->
+<div style="margin-top:28px;" id="newsSection">
+  <div class="section-lbl" style="margin-bottom:12px;">단지 뉴스 &amp; 거주민 이야기 — AI 실시간 분석</div>
+
+  <!-- 단지 선택 -->
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+    <select id="newsAptSelect" style="background:#141720;color:#e8eaf0;border:1px solid #2A2D3E;border-radius:7px;padding:7px 12px;font-size:13px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;min-width:180px;">
+      <option value="">단지를 선택하세요</option>
+      <option value="이문e편한세상">① 이문e편한세상</option>
+      <option value="월곡두산위브">② 월곡두산위브</option>
+      <option value="이문현대">③ 이문현대</option>
+      <option value="온수힐스테이트">④ 온수힐스테이트</option>
+      <option value="신길삼성">⑤ 신길삼성</option>
+      <option value="래미안크리시엘">⑥ 래미안크리시엘</option>
+      <option value="문래현대1차">⑦ 문래현대1차</option>
+      <option value="상도동 대림">⑧ 상도동 대림</option>
+      <option value="래미안월곡">⑨ 래미안월곡</option>
+      <option value="e편한세상온수역">⑩ e편한세상온수역</option>
+      <option value="삼선푸르지오">⑪ 삼선푸르지오</option>
+      <option value="꿈의숲푸르지오">⑫ 꿈의숲푸르지오</option>
+      <option value="종암래미안세레니티">⑬ 종암래미안세레니티</option>
+      <option value="꿈의숲대명루첸">⑭ 꿈의숲대명루첸</option>
+      <option value="소사푸르지오">⑮ 소사푸르지오</option>
+      <option value="가양2단지성지">⑯ 가양2단지성지</option>
+      <option value="구로주공1차">⑰ 구로주공1차</option>
+      <option value="등촌마을서광">⑱ 등촌마을서광</option>
+    </select>
+    <button id="newsFetchBtn" onclick="fetchAptNews()"
+      style="background:#60A0FF;color:#fff;border:none;border-radius:7px;padding:7px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:opacity .15s;"
+      onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+      분석하기
+    </button>
+    <span id="newsLoading" style="display:none;font-size:12px;color:#8090B8;font-family:'Noto Sans KR',sans-serif;">AI 검색 중...</span>
+  </div>
+
+  <!-- 결과 영역 -->
+  <div id="newsResult" style="display:none;background:#111420;border:1px solid #2A2D3E;border-radius:10px;padding:18px 20px;">
+    <!-- 헤더 -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div id="newsAptTitle" style="font-size:15px;font-weight:700;color:#e8eaf0;font-family:'Noto Sans KR',sans-serif;"></div>
+      <div id="newsTimestamp" style="font-size:10px;color:#555;font-family:'Noto Sans KR',sans-serif;"></div>
+    </div>
+    <!-- 탭 -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      <button class="news-tab on" onclick="switchNewsTab(this,'news')">최신 뉴스</button>
+      <button class="news-tab" onclick="switchNewsTab(this,'community')">거주민 이야기</button>
+      <button class="news-tab" onclick="switchNewsTab(this,'invest')">투자 분석</button>
+    </div>
+    <!-- 콘텐츠 -->
+    <div id="newsTabNews" class="news-tab-content"></div>
+    <div id="newsTabCommunity" class="news-tab-content" style="display:none;"></div>
+    <div id="newsTabInvest" class="news-tab-content" style="display:none;"></div>
+  </div>
+
+  <!-- 에러 -->
+  <div id="newsError" style="display:none;color:#FF5722;font-size:12px;padding:10px;font-family:'Noto Sans KR',sans-serif;"></div>
+</div>
+
+<style>
+.news-tab{background:#1A1D2E;color:#8090B8;border:1px solid #252A3A;border-radius:6px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.news-tab.on{background:rgba(96,160,255,.14);color:#60A0FF;border-color:#60A0FF;}
+.news-tab-content{font-family:'Noto Sans KR',sans-serif;font-size:13px;color:#c8cce0;line-height:1.75;}
+.news-item{background:#141720;border:1px solid #1E2235;border-radius:8px;padding:12px 14px;margin-bottom:10px;}
+.news-item-title{font-weight:700;color:#e8eaf0;margin-bottom:4px;font-size:13px;}
+.news-item-body{color:#9099B8;font-size:12px;line-height:1.65;}
+.news-item-tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:4px;margin-right:4px;margin-bottom:4px;font-weight:600;}
+.tag-pos{background:rgba(76,175,80,.15);color:#4CAF50;border:1px solid rgba(76,175,80,.3);}
+.tag-neg{background:rgba(255,112,67,.15);color:#FF7043;border:1px solid rgba(255,112,67,.3);}
+.tag-neu{background:rgba(96,160,255,.12);color:#60A0FF;border:1px solid rgba(96,160,255,.25);}
+</style>
+
+<script>
+async function fetchAptNews() {
+  const apt = document.getElementById('newsAptSelect').value;
+  if (!apt) { alert('단지를 선택해주세요'); return; }
+
+  const btn = document.getElementById('newsFetchBtn');
+  const loading = document.getElementById('newsLoading');
+  const result = document.getElementById('newsResult');
+  const errEl = document.getElementById('newsError');
+
+  btn.disabled = true;
+  loading.style.display = 'inline';
+  result.style.display = 'none';
+  errEl.style.display = 'none';
+
+  const prompt = `당신은 부동산 전문 분석가입니다. 서울 아파트 "${apt}"에 대해 아래 3가지를 각각 분석해주세요.
+
+1. [최신 뉴스] 이 아파트 또는 해당 지역(${apt}이 위치한 구, 동)의 최근 부동산 관련 뉴스, 개발호재, 정책 변화를 3~4가지 항목으로 요약해주세요.
+
+2. [거주민 이야기] 이 아파트 실거주자들이 주로 언급하는 장점과 단점을 각각 3가지씩 구체적으로 서술해주세요. 주차, 층간소음, 관리비, 학군, 편의시설, 커뮤니티 등 생활 밀착형 내용 위주로 작성해주세요.
+
+3. [투자 분석] 실수요자(3인 가족, 84㎡ 기준) 관점에서 이 단지의 매수 타이밍, 리스크, 기대 수익 포인트를 분석해주세요.
+
+반드시 아래 JSON 형식으로만 응답하세요. 마크다운 코드블록 없이 순수 JSON만 출력하세요:
+{
+  "news": [
+    {"title": "제목", "body": "내용", "tag": "호재|리스크|중립"},
+    {"title": "제목", "body": "내용", "tag": "호재|리스크|중립"},
+    {"title": "제목", "body": "내용", "tag": "호재|리스크|중립"}
+  ],
+  "community": {
+    "pros": ["장점1", "장점2", "장점3"],
+    "cons": ["단점1", "단점2", "단점3"],
+    "summary": "한 줄 거주 총평"
+  },
+  "invest": {
+    "timing": "매수 타이밍 분석",
+    "risk": "주요 리스크",
+    "upside": "기대 수익 포인트",
+    "verdict": "최종 한 줄 의견"
+  }
+}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await resp.json();
+
+    // 텍스트 블록에서 JSON 추출
+    const textBlocks = (data.content || []).filter(b => b.type === 'text');
+    const raw = textBlocks.map(b => b.text).join('');
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('JSON 파싱 실패');
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    // 렌더링
+    renderNewsResult(apt, parsed);
+
+  } catch (err) {
+    errEl.textContent = '분석 중 오류가 발생했습니다: ' + err.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    loading.style.display = 'none';
+  }
+}
+
+function renderNewsResult(apt, d) {
+  document.getElementById('newsAptTitle').textContent = apt + ' 분석 결과';
+  document.getElementById('newsTimestamp').textContent = new Date().toLocaleString('ko-KR');
+
+  // 뉴스 탭
+  const tagClass = t => t === '호재' ? 'tag-pos' : t === '리스크' ? 'tag-neg' : 'tag-neu';
+  document.getElementById('newsTabNews').innerHTML = (d.news || []).map(n => `
+    <div class="news-item">
+      <div class="news-item-title">${n.title}</div>
+      <span class="news-item-tag ${tagClass(n.tag)}">${n.tag}</span>
+      <div class="news-item-body" style="margin-top:6px;">${n.body}</div>
+    </div>`).join('');
+
+  // 커뮤니티 탭
+  const c = d.community || {};
+  document.getElementById('newsTabCommunity').innerHTML = `
+    <div class="news-item">
+      <div class="news-item-title" style="color:#4CAF50;margin-bottom:8px;">거주민 장점</div>
+      <ul style="margin:0;padding-left:18px;color:#9099B8;font-size:12px;line-height:2;">
+        ${(c.pros||[]).map(p=>`<li>${p}</li>`).join('')}
+      </ul>
+    </div>
+    <div class="news-item">
+      <div class="news-item-title" style="color:#FF7043;margin-bottom:8px;">거주민 단점</div>
+      <ul style="margin:0;padding-left:18px;color:#9099B8;font-size:12px;line-height:2;">
+        ${(c.cons||[]).map(p=>`<li>${p}</li>`).join('')}
+      </ul>
+    </div>
+    <div style="background:rgba(96,160,255,.08);border:1px solid rgba(96,160,255,.2);border-radius:7px;padding:10px 14px;font-size:12px;color:#8090B8;">
+      <strong style="color:#60A0FF;">거주 총평</strong><br>${c.summary||''}
+    </div>`;
+
+  // 투자 탭
+  const v = d.invest || {};
+  document.getElementById('newsTabInvest').innerHTML = `
+    <div class="news-item">
+      <div class="news-item-title">매수 타이밍</div>
+      <div class="news-item-body">${v.timing||''}</div>
+    </div>
+    <div class="news-item">
+      <div class="news-item-title" style="color:#FF7043;">주요 리스크</div>
+      <div class="news-item-body">${v.risk||''}</div>
+    </div>
+    <div class="news-item">
+      <div class="news-item-title" style="color:#4CAF50;">기대 수익 포인트</div>
+      <div class="news-item-body">${v.upside||''}</div>
+    </div>
+    <div style="background:rgba(96,160,255,.08);border:1px solid rgba(96,160,255,.2);border-radius:7px;padding:10px 14px;font-size:12px;color:#8090B8;">
+      <strong style="color:#60A0FF;">최종 의견</strong><br>${v.verdict||''}
+    </div>`;
+
+  document.getElementById('newsResult').style.display = 'block';
+  switchNewsTab(document.querySelector('.news-tab.on') || document.querySelector('.news-tab'), 'news');
+}
+
+function switchNewsTab(btn, key) {
+  document.querySelectorAll('.news-tab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  ['news','community','invest'].forEach(k => {
+    document.getElementById('newsTab' + k.charAt(0).toUpperCase() + k.slice(1)).style.display = k === key ? 'block' : 'none';
+  });
+}
+</script>
+
 <!-- 채점 기준 -->
 <div class="crit-box">
   <div class="crit-hdr">채점 기준 상세</div>
@@ -656,41 +853,12 @@ function toggleJangNote(){
   arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
 }
 </script>
-<!-- ===== 지도 섹션 ===== -->
-<div style="margin-top:28px;" id="mapSection">
-  <div class="section-lbl" style="margin-bottom:12px;">단지 위치 지도 — 마커 클릭 → 호갱노노 매물 바로가기</div>
 
-  <!-- 필터 버튼 -->
-  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
-    <button class="map-fb on" onclick="mapFilter(this,'all')">전체</button>
-    <button class="map-fb" onclick="mapFilter(this,'4')">4급지 영등포·동작</button>
-    <button class="map-fb" onclick="mapFilter(this,'5a')">5급지 동대문</button>
-    <button class="map-fb" onclick="mapFilter(this,'5b')">5급지 성북·강서</button>
-    <button class="map-fb" onclick="mapFilter(this,'6')">6급지 구로</button>
-  </div>
-
-  <!-- 지도 컨테이너 -->
-  <div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--bd);">
-    <div id="leafletMap" style="width:100%;height:520px;"></div>
-    <!-- 범례 -->
-    <div style="position:absolute;bottom:16px;right:16px;background:rgba(14,16,24,.92);border:1px solid #252A3A;border-radius:9px;padding:10px 13px;z-index:2;font-size:11px;">
-      <div style="font-size:10px;color:#566080;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">급지 (배경)</div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#50D0A0;flex-shrink:0"></div>4급지</div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#B070FF;flex-shrink:0"></div>5급지 동대문</div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#9070C8;flex-shrink:0"></div>5급지 성북·강서</div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;background:#8090A8;flex-shrink:0"></div>6급지</div>
-      <div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;">총점 (링)</div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;border:2px solid #F0C060;flex-shrink:0"></div>85점↑</div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;border:2px solid #40D090;flex-shrink:0"></div>75~84점</div>
-      <div style="display:flex;align-items:center;gap:6px;color:#8090B8"><div style="width:10px;height:10px;border-radius:50%;border:2px solid #556080;flex-shrink:0"></div>64점↓</div>
-    </div>
-  </div>
-</div>
 
 </div><!-- end .page -->
 
 <script>
-/* ===== 카카오맵 CSS ===== */
+/* ===== 지도 필터 버튼 CSS ===== */
 (function(){
   const s = document.createElement('style');
   s.textContent = [
@@ -1155,87 +1323,6 @@ const _mapData = apts.map(a => {
 }).filter(a => a.lat !== 0);
 
 let _map = null;
-
-function initMap(){
-  if(_map) return;
-  const c = document.getElementById('leafletMap');
-  if(!c) return;
-  _map = L.map('leafletMap', {center:[37.555,126.965], zoom:12});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-    attribution:'&copy; OpenStreetMap &copy; CartoDB',
-    subdomains:'abcd', maxZoom:19
-  }).addTo(_map);
-
-  function scoreColor(t){
-    if(t>=80) return '#4CAF50';
-    if(t>=70) return '#8BC34A';
-    if(t>=65) return '#FFC107';
-    return '#FF5722';
-  }
-
-  _mapData.forEach((a,idx) => {
-    if(!a.lat) return;
-    const ring = scoreColor(a.total);
-    const rank = idx+1;
-    const svg = `<svg width="44" height="54" viewBox="0 0 44 54" xmlns="http://www.w3.org/2000/svg">
-      <path d="M22 2C12 2 4 10 4 20c0 13 18 32 18 32s18-19 18-32C40 10 32 2 22 2z" fill="${ring}" opacity=".95"/>
-      <circle cx="22" cy="20" r="12" fill="#0E1018"/>
-      <text x="22" y="16" text-anchor="middle" font-size="7.5" fill="#aaa" font-family="sans-serif">${rank}위</text>
-      <text x="22" y="26" text-anchor="middle" font-size="10" font-weight="bold" fill="#fff" font-family="sans-serif">${a.total}</text>
-    </svg>`;
-    const icon = L.divIcon({html:svg, iconSize:[44,54], iconAnchor:[22,52], popupAnchor:[0,-54], className:''});
-    const marker = L.marker([a.lat, a.lng], {icon}).addTo(_map);
-
-    const hgUrl = a.navUrl || '#';
-    const tags = (a.tags||[]).slice(0,3).map(t=>`<span style="background:#1e2235;color:#aaa;font-size:9px;padding:2px 6px;border-radius:4px;">${t}</span>`).join(' ');
-    const popHtml = `<div style="font-family:'Noto Sans KR',sans-serif;min-width:200px;max-width:230px;">
-      <div style="font-weight:700;font-size:13px;margin-bottom:2px;">${a.id}</div>
-      <div style="font-size:10px;color:#888;margin-bottom:5px;">${a.area} · ${a.year}년 · ${a.units}세대</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-        <span style="font-size:10px;color:#aaa;">총점</span>
-        <span style="font-weight:700;color:${ring};font-size:14px;">${a.total}점</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <span style="font-size:10px;color:#aaa;">평균가</span>
-        <span style="font-weight:600;font-size:12px;">${a.avgPrice}억</span>
-      </div>
-      <div style="margin-bottom:8px;display:flex;gap:3px;flex-wrap:wrap;">${tags}</div>
-      <a href="${hgUrl}" target="_blank" rel="noopener"
-         style="display:block;text-align:center;background:#FF6600;color:#fff;font-size:11px;font-weight:700;padding:6px 0;border-radius:6px;text-decoration:none;">
-        호갱노노 매물 보기
-      </a>
-    </div>`;
-    marker.bindPopup(popHtml, {maxWidth:250, className:'apt-popup'});
-    marker.on('click', function(){ this.openPopup(); });
-    a._marker = marker;
-  });
-}
-
-function mapFilter(btn, key){
-  document.querySelectorAll('.map-fb').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  if(!_map) return;
-  _mapData.forEach(a => {
-    if(!a._marker) return;
-    const show = (key==='all') || (a.fk && a.fk.startsWith(key));
-    if(show){ if(!_map.hasLayer(a._marker)) a._marker.addTo(_map); }
-    else { if(_map.hasLayer(a._marker)) _map.removeLayer(a._marker); }
-  });
-}
-
-// 지도 자동 실행
-setTimeout(initMap, 200);
-
-// _mapData를 apts 총점 계산 후 재생성 (순서 보장)
-(function(){
-  const cmap = _coordMap;
-  window._mapData = apts.map((a,i) => {
-    const c = cmap[a.id] || [0,0];
-    return {...a, lat:c[0], lng:c[1], fk:a.tcls};
-  }).filter(a => a.lat !== 0);
-  // 지도 초기화 (DOM 로드 후)
-  setTimeout(initMap, 100);
-})();
 </script>
 </body>
 </html>
