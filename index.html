@@ -186,6 +186,18 @@ table.ct{width:100%;border-collapse:collapse;}
 .notice b{color:var(--gold);}
 .notice .fix{color:var(--green);font-weight:600;}
 .notice .alrt{color:var(--red);font-weight:600;}
+/* ===== 실거래가 섹션 ===== */
+.trade-btn{width:100%;padding:8px;background:rgba(96,160,255,.07);border:none;border-top:1px solid var(--bd);border-radius:0 0 12px 12px;color:#60A0FF;font-size:11px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:5px;}
+.trade-btn:hover{background:rgba(96,160,255,.16);}
+.trade-btn:disabled{opacity:.5;cursor:default;}
+.trade-result{padding:10px 14px;border-top:1px solid var(--bd);background:var(--s2);}
+.trade-item{border-radius:5px;padding:5px 8px;margin-bottom:3px;display:flex;align-items:center;gap:8px;border:1px solid var(--bd);}
+/* ===== API 키 플로팅 패널 ===== */
+#apiPanel{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+#apiPanelBox{background:var(--s1);border:1px solid var(--bd2);border-radius:12px;padding:14px 16px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.7);display:none;flex-direction:column;gap:8px;}
+#apiPanelBox.open{display:flex;}
+#apiToggleBtn{background:var(--s2);border:1px solid var(--bd2);border-radius:50%;width:42px;height:42px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.5);transition:border-color .15s;}
+#apiToggleBtn:hover{border-color:#60A0FF;}
 </style>
 </head>
 <body>
@@ -889,12 +901,6 @@ function toggleJangNote(){
   document.head.appendChild(s);
 })();
 
-/* ===== 지도 데이터 (좌표 검증 완료) ===== */
-const 
-
-
-
-
 function priceClass(p) {
   if(p >= 9.5) return "p-hi";
   if(p >= 8.5) return "p-mid";
@@ -1049,6 +1055,11 @@ function renderCards() {
           <div class="pcb c"><div class="pct c">약점</div><ul class="pcul c">${a.cons.map(c=>`<li class="pcli">${c}</li>`).join("")}</ul></div>
         </div>
       </div>
+      <div id="trade-result-${a.id}" class="trade-result" style="display:none;"></div>
+      <button class="trade-btn" id="trade-btn-${a.id}" onclick="fetchTrade('${a.id}')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+        실거래가 조회 (최근 3개월)
+      </button>
     </div>`;
   }).join("");
 }
@@ -1323,6 +1334,199 @@ const _mapData = apts.map(a => {
 }).filter(a => a.lat !== 0);
 
 let _map = null;
+</script>
+
+<!-- ===== 실거래가 API 플로팅 패널 ===== -->
+<div id="apiPanel">
+  <div id="apiPanelBox">
+    <div style="font-size:13px;font-weight:700;color:var(--tx);margin-bottom:2px;">공공데이터 API 키 설정</div>
+    <div style="font-size:10px;color:var(--mu);margin-bottom:6px;">data.go.kr → 아파트매매 실거래가 API → 서비스키</div>
+    <input id="apiKeyInput" type="password" placeholder="서비스키(인코딩) 붙여넣기"
+      style="background:var(--s3);border:1px solid var(--bd2);border-radius:7px;padding:8px 10px;color:var(--tx);font-size:11px;font-family:'IBM Plex Mono',monospace;width:100%;outline:none;">
+    <div style="display:flex;gap:6px;">
+      <button onclick="saveApiKey()" style="flex:1;background:#60A0FF;color:#fff;border:none;border-radius:7px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">저장</button>
+      <button onclick="clearApiKey()" style="background:var(--s3);color:var(--mu2);border:1px solid var(--bd);border-radius:7px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">삭제</button>
+    </div>
+    <div id="apiKeyStatus" style="font-size:10px;color:var(--green);text-align:center;min-height:14px;"></div>
+    <div style="font-size:10px;color:var(--mu);border-top:1px solid var(--bd);padding-top:6px;line-height:1.6;">
+      ⚠ API 키는 이 기기 브라우저(localStorage)에만 저장됩니다.<br>
+      CORS 오류 시 브라우저에서 직접 접근이 차단된 것이므로<br>
+      <b style="color:var(--gold)">Allow CORS</b> 확장 프로그램을 설치하세요.
+    </div>
+  </div>
+  <button id="apiToggleBtn" onclick="toggleApiPanel()" title="API 키 설정">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8090B8" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>
+  </button>
+</div>
+
+<script>
+/* ===== API 키 패널 ===== */
+(function(){
+  const saved = localStorage.getItem('molit_api_key');
+  if (saved) {
+    document.getElementById('apiKeyInput').value = saved;
+    document.getElementById('apiKeyStatus').textContent = '✓ 키 저장됨';
+    document.getElementById('apiToggleBtn').querySelector('svg').setAttribute('stroke','#60A0FF');
+  }
+})();
+
+function toggleApiPanel() {
+  document.getElementById('apiPanelBox').classList.toggle('open');
+}
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) return;
+  localStorage.setItem('molit_api_key', key);
+  const st = document.getElementById('apiKeyStatus');
+  st.textContent = '✓ 저장되었습니다';
+  document.getElementById('apiToggleBtn').querySelector('svg').setAttribute('stroke','#60A0FF');
+  setTimeout(() => { st.textContent = '✓ 키 저장됨'; }, 1500);
+}
+function clearApiKey() {
+  localStorage.removeItem('molit_api_key');
+  document.getElementById('apiKeyInput').value = '';
+  document.getElementById('apiKeyStatus').textContent = '삭제됨';
+  document.getElementById('apiToggleBtn').querySelector('svg').setAttribute('stroke','#8090B8');
+}
+
+/* ===== 지역코드 매핑 ===== */
+const LAWD_MAP = {
+  "이문e편한세상":      "11230",  // 동대문구
+  "월곡두산위브":       "11290",  // 성북구
+  "이문현대":           "11230",  // 동대문구
+  "래미안월곡":         "11290",  // 성북구
+  "신길삼성":           "11560",  // 영등포구
+  "래미안크리시엘":     "11290",  // 성북구
+  "삼선푸르지오":       "11290",  // 성북구
+  "문래현대1차":        "11560",  // 영등포구
+  "온수힐스테이트":     "11530",  // 구로구
+  "종암래미안세레니티": "11290",  // 성북구
+  "꿈의숲푸르지오":     "11290",  // 성북구
+  "상도동 대림":        "11590",  // 동작구
+  "등촌마을서광":       "11500",  // 강서구
+  "가양2단지성지":      "11500",  // 강서구
+  "꿈의숲대명루첸":     "11290",  // 성북구
+  "구로주공1차":        "11530",  // 구로구
+  "e편한세상온수역":    "11530",  // 구로구
+  "소사푸르지오":       "41194"   // 경기 부천시 소사구
+};
+
+/* ===== 유틸 ===== */
+function getLastMonths(n) {
+  const result = [];
+  const now = new Date();
+  for (let i = 0; i < n; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    result.push(`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}`);
+  }
+  return result;
+}
+
+function normalizeAptNm(s) {
+  return s.replace(/\s/g,'').replace(/[A-Za-z]/g, c => c.toLowerCase());
+}
+
+/* ===== 실거래가 fetch ===== */
+async function fetchTrade(aptId) {
+  const key = localStorage.getItem('molit_api_key');
+  if (!key) {
+    document.getElementById('apiPanelBox').classList.add('open');
+    alert('먼저 우측 하단 API 키 버튼에서 서비스키를 입력하세요.');
+    return;
+  }
+
+  const lawd = LAWD_MAP[aptId];
+  if (!lawd) {
+    alert('해당 단지의 지역코드가 등록되지 않았습니다.');
+    return;
+  }
+
+  const btn = document.getElementById(`trade-btn-${aptId}`);
+  const resultEl = document.getElementById(`trade-result-${aptId}`);
+
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg> 조회 중...';
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '<div style="text-align:center;padding:14px;color:var(--mu);font-size:11px;">데이터 불러오는 중...</div>';
+
+  try {
+    const months = getLastMonths(3);
+    let allItems = [];
+
+    for (const ym of months) {
+      const url = `https://apis.data.go.kr/1613000/RTMSDataSvcAptTradeDev/getRTMSDataSvcAptTradeDev`
+        + `?serviceKey=${encodeURIComponent(key)}&LAWD_CD=${lawd}&DEAL_YMD=${ym}&numOfRows=100&pageNo=1`;
+
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`서버 오류 (HTTP ${resp.status})`);
+      const data = await resp.json();
+
+      let items = data?.body?.items?.item;
+      if (!items) continue;
+      if (!Array.isArray(items)) items = [items];
+
+      const target = normalizeAptNm(aptId);
+      const filtered = items.filter(it => {
+        const nm = normalizeAptNm(it.aptNm || '');
+        return nm.includes(target) || target.includes(nm);
+      });
+      allItems.push(...filtered);
+    }
+
+    // 날짜 내림차순
+    allItems.sort((a, b) => {
+      const fa = `${a.dealYear}${String(a.dealMonth).padStart(2,'0')}${String(a.dealDay||0).padStart(2,'0')}`;
+      const fb = `${b.dealYear}${String(b.dealMonth).padStart(2,'0')}${String(b.dealDay||0).padStart(2,'0')}`;
+      return fb.localeCompare(fa);
+    });
+
+    renderTradeResult(aptId, allItems, resultEl);
+  } catch (err) {
+    const isCors = err.message.includes('Failed to fetch') || err.message.includes('NetworkError');
+    resultEl.innerHTML = `
+      <div style="padding:10px 12px;font-size:11px;">
+        <div style="color:var(--red);margin-bottom:4px;">⚠ ${isCors ? 'CORS 차단' : '오류'}: ${err.message}</div>
+        ${isCors ? '<div style="color:var(--mu);font-size:10px;">브라우저가 직접 API 접근을 차단했습니다.<br>Chrome 확장 <b style=\'color:var(--gold)\'>Allow CORS: Access-Control-Allow-Origin</b> 설치 후 재시도하세요.</div>' : ''}
+      </div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg> 재조회';
+  }
+}
+
+function renderTradeResult(aptId, items, el) {
+  if (items.length === 0) {
+    el.innerHTML = '<div style="padding:12px;color:var(--mu);font-size:11px;text-align:center;">최근 3개월 해당 단지 거래 없음</div>';
+    return;
+  }
+
+  const avg = items.reduce((s, it) => s + parseInt((it.dealAmount||'0').replace(/,/g,'')), 0) / items.length / 10000;
+
+  const rows = items.slice(0, 15).map(it => {
+    const rawPrice = parseInt((it.dealAmount||'0').replace(/,/g,''));
+    const priceAmt = rawPrice / 10000;
+    const priceStr = priceAmt >= 1 ? `${priceAmt.toFixed(2)}억` : `${rawPrice.toLocaleString()}만`;
+    const pc = priceAmt >= 9.5 ? '#FF6070' : priceAmt >= 8.5 ? '#F0C060' : priceAmt >= 7.5 ? '#74D7B0' : '#60A0FF';
+    const ar = parseFloat(it.excluUseAr || 0).toFixed(1);
+    const floor = it.floor || '?';
+    const date = `${it.dealYear}.${String(it.dealMonth).padStart(2,'0')}.${String(it.dealDay||'').padStart(2,'0')}`;
+    const gbn = (it.dealingGbn && it.dealingGbn !== '중개거래')
+      ? `<span style="font-size:9px;color:#FFA040;margin-left:3px">${it.dealingGbn}</span>` : '';
+    return `<div class="trade-item">
+      <span style="font-weight:700;font-family:'IBM Plex Mono';color:${pc};min-width:64px;font-size:12px">${priceStr}</span>
+      <span style="color:var(--mu2);font-size:10px">${ar}㎡ · ${floor}층${gbn}</span>
+      <span style="color:var(--mu);font-size:10px;margin-left:auto;white-space:nowrap">${date}</span>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <span style="font-size:10px;color:var(--mu2)">최근 3개월 <b style="color:var(--tx)">${items.length}건</b></span>
+      <span style="font-size:10px;color:var(--mu2)">평균 <b style="color:var(--gold);font-family:'IBM Plex Mono'">${avg.toFixed(2)}억</b></span>
+    </div>
+    ${rows}
+    ${items.length > 15 ? `<div style="font-size:10px;color:var(--mu);text-align:center;margin-top:4px">외 ${items.length-15}건 더 있음</div>` : ''}`;
+}
 </script>
 </body>
 </html>
